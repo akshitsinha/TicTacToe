@@ -32,7 +32,7 @@ public class ImageBuilder {
 
     public ImageBuilder(String path) {
         try (FileInputStream inputStream = new FileInputStream(path)) {
-            this.image = new Image(new FileInputStream(path));
+            this.image = new Image(inputStream);
         } catch (Exception e) {
             e.printStackTrace();
         }

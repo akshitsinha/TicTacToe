@@ -153,15 +153,15 @@ public class App extends Application {
         StackPane.setMargin(gameBanner, new Insets(20, 0, 0, 0));
         root.getChildren().addAll(vBox, gameBanner);
 
-        stage.setMinHeight(700); // Minimum Height
-        stage.setMinWidth(1000); // Minimum Width
+        stage.setMinHeight(700);
+        stage.setMinWidth(1000);
         stage.show();
     }
 
     @Override
     public void stop() throws Exception {
         Console.log("Application ran for " + Duration.between(startTime, Instant.now()).toMillis() + " milliseconds.");
-        System.exit(0); // Terminates the JVM.
+        System.exit(0);
         super.stop();
     }
 }

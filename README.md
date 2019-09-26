@@ -1,5 +1,5 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE.md)
-![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/akshit1729/tictactoe)
+[![GitHub release](https://img.shields.io/github/v/release/akshit1729/tictactoe)](https://github.com/akshit1729/TicTacToe/releases/latest/)
 
 ---- 
 # Tic Tac Toe

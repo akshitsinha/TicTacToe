@@ -25,9 +25,6 @@ import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
-/**
- * @Description Junction class.
- */
 public class NoughtsAndCrosses {
 
     private static final SettingsConfigurator writer = new SettingsConfigurator();

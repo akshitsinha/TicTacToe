@@ -195,8 +195,8 @@ public class Dashboard {
      * @param array The JSON Array to take the elements from.
      * @return Total time.
      */
-    private int getTotalTime(JSONArray array) {
-        int totalTime = 0;
+    private long getTotalTime(JSONArray array) {
+        long totalTime = 0;
         for (Object o : array) {
             totalTime += Long.parseLong(o.toString());
         }
