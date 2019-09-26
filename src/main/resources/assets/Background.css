@@ -1,0 +1,8 @@
+/*The ViewPort of the ScrollPane */
+.scroll-pane .viewport {
+    -fx-background-color: #616161;
+  }
+
+.scroll-pane {
+    -fx-background-color:transparent;
+}
