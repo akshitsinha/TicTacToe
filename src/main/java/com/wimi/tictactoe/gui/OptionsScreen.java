@@ -24,6 +24,7 @@ import com.wimi.tictactoe.builders.TextBuilder;
 import com.wimi.tictactoe.client.NoughtsAndCrosses;
 import com.wimi.tictactoe.client.game.mechanics.AudioEngine;
 import com.wimi.tictactoe.util.Console;
+import com.wimi.tictactoe.util.Levels;
 import com.wimi.tictactoe.util.Themes;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
@@ -37,6 +38,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
 /**
@@ -122,7 +124,7 @@ public class OptionsScreen {
         sfxHBox.getChildren().addAll(sfxHeader, SFX);
 
         Text timeHeader = new TextBuilder("Max Time allowed in Timed Mode")
-                .setFont(Font.font("Arial", FontPosture.ITALIC, 24))
+                .setFont(Font.font("Arial", FontWeight.SEMI_BOLD, 24))
                 .setColor(Color.SLATEGRAY)
                 .build();
         Slider timeSlider = new SliderBuilder(1, 15, (long) NoughtsAndCrosses.getWriter().getJsonKey("maxTime"))
@@ -133,12 +135,38 @@ public class OptionsScreen {
             NoughtsAndCrosses.getWriter().setJsonKey("maxTime", (int) timeSlider.getValue());
             Console.log("Set maxTime JSON value to " + NoughtsAndCrosses.getWriter().getJsonKey("maxTime") + " seconds.");
         });
+
         VBox maxTimeVBox = new VBox(20);
         maxTimeVBox.setAlignment(Pos.CENTER);
         maxTimeVBox.getChildren().addAll(timeSlider, timeHeader);
 
+        VBox difficultiesVBox = new VBox(20);
+        difficultiesVBox.getChildren().addAll(new TextBuilder("1 - Easy")
+                .setFont(Font.font("Arial", FontWeight.SEMI_BOLD, 24))
+                .setColor(Color.GREENYELLOW)
+                .build(), new TextBuilder("2 - Medium")
+                .setFont(Font.font("Arial", FontWeight.SEMI_BOLD, 24))
+                .setColor(Color.GREENYELLOW)
+                .build(), new TextBuilder("3 - Impossible")
+                .setFont(Font.font("Arial", FontWeight.SEMI_BOLD, 24))
+                .setColor(Color.GREENYELLOW)
+                .build());
+        Text difficultyHeader = new TextBuilder("Difficulty")
+                .setFont(Font.font("Arial", FontWeight.BOLD, 24))
+                .setColor(Color.SLATEGRAY)
+                .build();
+        Slider difficultySlider = new SliderBuilder(1, 3, getDifficultyLevel())
+                .setOrientation(Orientation.HORIZONTAL)
+                .setWidth(300)
+                .build();
+        difficultySlider.setOnMouseReleased(event -> setDifficultyLevel((int) Math.round(difficultySlider.getValue())));
+
+        HBox difficultyHBox = new HBox(30);
+        difficultyHBox.getChildren().addAll(difficultyHeader, difficultySlider, difficultiesVBox);
+        difficultyHBox.setAlignment(Pos.CENTER);
+
         VBox rootVBox = new VBox(15);
-        rootVBox.getChildren().addAll(themeHBox, sfxHBox, maxTimeVBox);
+        rootVBox.getChildren().addAll(themeHBox, sfxHBox, maxTimeVBox, difficultyHBox);
         rootVBox.setAlignment(Pos.CENTER);
         root.setCenter(rootVBox);
 
@@ -162,6 +190,34 @@ public class OptionsScreen {
         App.getStage().setWidth(App.getStage().getWidth());
         NoughtsAndCrosses.createSceneBackground(root);
         scene.getStylesheets().add(this.getClass().getResource("/assets/Slider.css").toExternalForm());
+    }
+
+    private int getDifficultyLevel() {
+        if (!NoughtsAndCrosses.getWriter().containsKey("difficulty"))
+            Console.log("Could not find the 'difficulty' JSON key in the settings JSON");
+        else if (NoughtsAndCrosses.getWriter().getJsonKey("difficulty").equals(Levels.EASY.toString())) return 1;
+        else if (NoughtsAndCrosses.getWriter().getJsonKey("difficulty").equals(Levels.MEDIUM.toString())) return 2;
+        else if (NoughtsAndCrosses.getWriter().getJsonKey("difficulty").equals(Levels.IMPOSSIBLE.toString())) return 3;
+
+        return 0;
+    }
+
+    private void setDifficultyLevel(int difficultyLevel) {
+        switch (difficultyLevel) {
+            case 1:
+                NoughtsAndCrosses.getWriter().setJsonKey("difficulty", Levels.EASY.toString());
+                break;
+            case 2:
+                NoughtsAndCrosses.getWriter().setJsonKey("difficulty", Levels.MEDIUM.toString());
+                break;
+            case 3:
+                NoughtsAndCrosses.getWriter().setJsonKey("difficulty", Levels.IMPOSSIBLE.toString());
+                break;
+            default:
+                throw new IllegalStateException("Unknown difficulty level");
+        }
+
+        Console.log("Set 'difficulty' JSON value to " + NoughtsAndCrosses.getWriter().getJsonKey("difficulty"));
     }
 
     public Scene getScene() {

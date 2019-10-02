@@ -197,7 +197,7 @@ public class ContinueScreen {
         Text commandMessage = new TextBuilder("Are you sure you want to delete " + file.getName())
                 .setLayoutX(popupScene.getWidth() / 2 - 180)
                 .setLayoutY(popupScene.getHeight() / 2 - 50)
-                .setFont(Font.font("Consolas", FontPosture.REGULAR, 18))
+                .setFont(Font.font("Arial", FontPosture.REGULAR, 18))
                 .build();
         Button confirmationButton = new ButtonBuilder("Confirm")
                 .setPrefWidth(100)
@@ -234,12 +234,12 @@ public class ContinueScreen {
         Text commandMessage = new TextBuilder("What do you want to rename this file to?")
                 .setLayoutX(popupScene.getWidth() / 2 - 180)
                 .setLayoutY(popupScene.getHeight() / 2 - 50)
-                .setFont(Font.font("Consolas", FontPosture.REGULAR, 18))
+                .setFont(Font.font("Arial", FontPosture.REGULAR, 18))
                 .build();
         Text notificationText = new TextBuilder("")
                 .setLayoutX(popupScene.getWidth() / 2 - 160)
                 .setLayoutY(popupScene.getHeight() / 2 + 40)
-                .setFont(Font.font("Consolas", FontPosture.REGULAR, 20))
+                .setFont(Font.font("Arial", FontPosture.REGULAR, 20))
                 .setColor(Color.RED)
                 .build();
         Button confirmationButton = new ButtonBuilder("Confirm")

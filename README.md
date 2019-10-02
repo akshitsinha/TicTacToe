@@ -1,6 +1,6 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE.md)
 [![GitHub release](https://img.shields.io/github/v/release/akshit1729/tictactoe)](https://github.com/akshit1729/TicTacToe/releases/latest/)
-
+[![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/akshit1729/TicTacToe.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/akshit1729/TicTacToe/context:java)
 ---- 
 # Tic Tac Toe
 
@@ -12,17 +12,16 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-* Make sure you have JRE 8 or later installed on your machine.
+* Make sure you have JRE 8 installed on your machine.
 * Download the latest release from [here](https://github.com/akshit1729/tictactoe/releases).
 
 ### Deployment
 
-Open a terminal window in the same directory where you placed your jar and run the following command.
+Open a terminal window in the same directory and simply run the following.
 
 ```
 java -jar TicTacToe.jar
 ```
-Alternatively you can open the jar with `Java SE Binary`, if you do not want the console output.
 
 ## Contributing
 

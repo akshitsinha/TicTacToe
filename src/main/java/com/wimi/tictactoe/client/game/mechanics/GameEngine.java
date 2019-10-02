@@ -323,7 +323,7 @@ public class GameEngine {
                 int finalI = i; // Iteration number has to be effectively final for usage in lambda expressions.
                 int finalJ = j;
                 nodeMatrix[i][j] = new ButtonBuilder(" ")
-                        .setFont(Font.font("Consolas", FontWeight.BOLD, 32))
+                        .setFont(Font.font("Arial", FontWeight.BOLD, 32))
                         .setPrefHeight(100)
                         .setPrefWidth(100)
                         .setCssScript("-jfx-button-type: RAISED; -fx-background-color: gold; -fx-text-fill: blue;")

@@ -32,7 +32,7 @@ import javafx.scene.text.Text;
 class GraphicsEngine {
 
     private final Text gameTitleBanner = new TextBuilder("Tic Tac Toe")
-            .setFont(Font.font("Consolas", FontPosture.ITALIC, 36))
+            .setFont(Font.font("Segoe UI", FontPosture.ITALIC, 36))
             .setColor(Color.SLATEGRAY)
             .build();
     private final Text timeElapsedBanner = new TextBuilder("Time elapsed:")

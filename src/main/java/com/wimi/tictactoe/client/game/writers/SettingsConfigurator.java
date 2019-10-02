@@ -17,6 +17,7 @@
 package com.wimi.tictactoe.client.game.writers;
 
 import com.wimi.tictactoe.util.Console;
+import com.wimi.tictactoe.util.Levels;
 import com.wimi.tictactoe.util.Themes;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -42,7 +43,7 @@ public class SettingsConfigurator {
             Console.log("Initialization of options.json already done.");
 
             try (FileReader reader = new FileReader(optionsAssets)) {
-                Console.log("Getting the already written JSON values.");
+                Console.log("Getting the already written JSON elements.");
                 jsonObject = (JSONObject) jsonParser.parse(reader);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -56,7 +57,8 @@ public class SettingsConfigurator {
                 FileWriter fileWriter = new FileWriter(optionsAssets);
                 jsonObject.put("theme", Themes.Dark.toString()); // Dark Theme by default.
                 jsonObject.put("SFX", true); // SFX on by default.
-                jsonObject.put("maxTime", 5); // Max time allowed when playing on Timed mode. 5 by default.
+                jsonObject.put("maxTime", 5); // Max time allowed when playing on Timed mode.
+                jsonObject.put("difficulty", Levels.MEDIUM.toString()); // Difficulty when playing against computer.
                 fileWriter.write(jsonObject.toJSONString());
                 fileWriter.close();
 
@@ -87,6 +89,21 @@ public class SettingsConfigurator {
         }
 
         return jsonObject.get(key);
+    }
+
+    /**
+     * Returns whether a certain JSON key exists or not.
+     *
+     * @param key THe key value to check for.
+     */
+    public boolean containsKey(Object key) {
+        try (FileReader reader = new FileReader(optionsAssets)) {
+            jsonObject = (JSONObject) jsonParser.parse(reader);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jsonObject.containsKey(key);
     }
 
     /**
