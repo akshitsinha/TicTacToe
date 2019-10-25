@@ -59,7 +59,7 @@ public class GameEngine {
     private final StackPane root = new StackPane();
     private final Scene scene = new Scene(root, 1366, 768); // Default game dimensions
     private final Structure structure = new Structure();
-    private final Text timeElapsed = new TextBuilder(" ") // Shows the time elapsed since game start.
+    private final Text timeElapsed = new TextBuilder("Initiating..") // Shows the time elapsed since game start.
             .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 42))
             .setColor(Color.BROWN)
             .build();
@@ -67,7 +67,7 @@ public class GameEngine {
             .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 48))
             .setColor(Color.DARKRED)
             .build();
-    private final Text timerLeft = new TextBuilder(" ") // Time left for player to make a move when playing in Timed mode.
+    private final Text timeLeft = new TextBuilder(" ") // Time left for player to make a move when playing in Timed mode.
             .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 42))
             .setColor(Color.GREENYELLOW)
             .build();
@@ -76,49 +76,51 @@ public class GameEngine {
     private final GridPane gameGrid = new GridPane();
     private Dashboard dashboard;
     private File theFile;
-    private JSONObject jsonObject = new JSONObject();
+    private ScheduledExecutorService timerExecutor = Executors.newSingleThreadScheduledExecutor(); // Timer which CAN reset anytime.
+    private JSONObject jsonObject = new JSONObject(); // Primary JSON object.
     private JSONArray jsonArrayX = new JSONArray(); // Contains the time taken for each move by X.
     private JSONArray jsonArrayO = new JSONArray(); // Contains the time taken for each move by O.
     private boolean finished = false; // Is the game finished or not.
     private boolean timed = false; // Is the game in Timed mode or not.
     private long timePlayed = 0; // Time played since game start.
-    private long timeForMove = 0; // Time taken to do each move is temporarily saves to this variable.
+    private long timeForMove = 0; // Time taken to do each move is temporarily saved to this variable.
     private long maxTimeAllowed = 0; // Max time allowed when the game is in timed mode.
     private int movesX = 0; // Total moves made of X
     private int movesO = 0; // Total moves made of O
     private int moves = 0; // Total number of moves.
     private States move = States.NONE; // The current move.
-    private States winner = States.NONE; // No winner by default.
-
-    public GameEngine(File file) {
-        Console.log("Started the game " + file.getName());
-        this.theFile = file;
-
-        ScheduledExecutorService timedExecutor = Executors.newSingleThreadScheduledExecutor();
-        Runnable runnable = () -> {
-            if (finished) {
-                timedExecutor.shutdown();
-                return;
-            }
-
-            timeElapsed.setText(String.format("%02d:%02d:%02d", timePlayed / 3600, (timePlayed % 3600) / 60, timePlayed % 60));
-            // Integer formatted as:            HH : MM : SS
-
-            if (timed && moves > 0) { // Timed game condition.
-                timerLeft.setText(String.valueOf(maxTimeAllowed - timeForMove));
-
+    private States winner = States.NONE; // The winner of the game.
+    private Runnable timerRunnable = () -> {
+        if (finished) timerExecutor.shutdown();
+        else {
+            if (timed && moves > 0) {
+                timeLeft.setText(String.valueOf(maxTimeAllowed - timeForMove));
                 if (timeForMove >= maxTimeAllowed) {
                     winner = structure.getConjugateMove(move); // The other player is the winner as the opponent couldn't make a move in time.
                     Platform.runLater(this::win); // Run on JavaFX thread.
                     Console.log("Time is up for " + move + " to make a move. Hence " + structure.getConjugateMove(move).toString() + " is the winner.");
                     finished = true;
-                    timedExecutor.shutdown();
-                    return;
+                    timerExecutor.shutdown();
                 }
             }
 
-            timePlayed++; // Increment total time played.
             timeForMove++; // Increment time taken for current move.
+        }
+    };
+
+    public GameEngine(File file) {
+        Console.log("Started the game " + file.getName());
+        this.theFile = file;
+
+        ScheduledExecutorService elapsedExecutor = Executors.newSingleThreadScheduledExecutor();
+        Runnable elapsedRunnable = () -> {
+            if (finished) elapsedExecutor.shutdown();
+            else {
+                timeElapsed.setText(String.format("%02d:%02d:%02d", timePlayed / 3600, (timePlayed % 3600) / 60, timePlayed % 60));
+                // Integer formatted as:            HH : MM : SS
+
+                timePlayed++; // Increment total time played.
+            }
         };
 
         try (FileReader reader = new FileReader(file)) {
@@ -128,7 +130,7 @@ public class GameEngine {
 
             if (jsonObject.containsKey("state") && jsonObject.get("state").equals(true) && jsonObject.containsKey("winner")) {
                 // Game already finished state.
-                winner = structure.getMove((String) jsonObject.get("winner"));
+                winner = structure.getMove(jsonObject.get("winner").toString());
                 Console.log("The game is already finished. The game will be switched to the Dashboard.");
 
                 this.dashboard = new Dashboard(file);
@@ -137,8 +139,28 @@ public class GameEngine {
                 // Resume game state.
                 Console.log("Elements necessary to resume the game are found.");
 
-                Console.log("The timed setting of the game is " + jsonObject.get("mode").equals("timed"));
+                JSONArray jsonArray = (JSONArray) jsonObject.get("nodes");
+                setupMatrix();
+                setGameProgress(jsonArray);
+
+                timeForMove = (long) jsonObject.get("LastMoveTime");
+                Console.log("Last move already took " + timeForMove + " seconds.");
+
                 timed = jsonObject.get("mode").equals("timed");
+
+                maxTimeAllowed = (long) NoughtsAndCrosses.getWriter().getJsonKey("maxTime");
+                if (timed)
+                    Console.log("Maximum time allowed in this Timed game mode will be " + maxTimeAllowed + " seconds.");
+                else Console.log("This game is being played in Unlimited Time mode.");
+
+                if (timeForMove >= maxTimeAllowed) {
+                    Console.log("Max time allowed is already reached. The game will be switched to the Dashboard.");
+                    this.dashboard = new Dashboard(file);
+                    finished = true;
+                } else if (moves > 0) {
+                    elapsedExecutor.scheduleWithFixedDelay(elapsedRunnable, 0, 1, TimeUnit.SECONDS);
+                    timerExecutor.scheduleWithFixedDelay(timerRunnable, 0, 1, TimeUnit.SECONDS);
+                }
 
                 Console.log("The opponent is " + jsonObject.get("opponent").toString());
                 // which opponent log here for future
@@ -146,35 +168,16 @@ public class GameEngine {
                 jsonArrayX = (JSONArray) jsonObject.get("timeX");
                 jsonArrayO = (JSONArray) jsonObject.get("timeO");
 
-                JSONArray jsonArray = (JSONArray) jsonObject.get("nodes");
-                setupMatrix();
-                setGameProgress(jsonArray);
-                Console.log("Previous game nodes were found as " + jsonArray);
-
                 timePlayed = (long) jsonObject.get("ElapsedTime");
                 Console.log("Previous time played was " + timePlayed + " seconds.");
-
-                timeForMove = (long) jsonObject.get("LastMoveTime");
-                Console.log("Last move already took " + timeForMove + " seconds.");
 
                 if (jsonObject.containsKey("move")) {
                     move = structure.getMove(jsonObject.get("move").toString());
                     Console.log("The last move was " + structure.getConjugateMove(move));
                 } else getCurrentMove();
-
-                if (timed) {
-                    maxTimeAllowed = (long) NoughtsAndCrosses.getWriter().getJsonKey("maxTime");
-
-                    if (timeForMove >= maxTimeAllowed) {
-                        Console.log("Max time allowed is already reached. The game will be switched to the Dashboard.");
-                        finished = true;
-                    }
-                }
-
-                timedExecutor.scheduleWithFixedDelay(runnable, 0, 1, TimeUnit.SECONDS);
             } else if (jsonObject.containsKey("mode") && jsonObject.containsKey("opponent")) {
                 // Default game state.
-                Console.log("The current game seems to be running for the first time.");
+                Console.log("The current game is running for the first time.");
 
                 move = structure.randMoveGen(); // Starting move.
                 Console.log("The starting move will be " + move.toString());
@@ -182,16 +185,18 @@ public class GameEngine {
                 timed = jsonObject.get("mode").equals("timed");
                 Console.log("The timed setting of the game is " + timed);
 
+                setupMatrix();
+
                 if (timed) {
                     maxTimeAllowed = (long) NoughtsAndCrosses.getWriter().getJsonKey("maxTime");
                     Console.log("Max time allowed in this game will be " + maxTimeAllowed + " seconds.");
-                }
+                } else Console.log("This game is being played in Unlimited Time mode.");
 
                 Console.log("The opponent is " + jsonObject.get("opponent").toString());
-                // which opponent log here for future
+                // Opponent log here
 
-                setupMatrix();
-                timedExecutor.scheduleWithFixedDelay(runnable, 0, 1, TimeUnit.SECONDS);
+                elapsedExecutor.scheduleWithFixedDelay(elapsedRunnable, 1, 1, TimeUnit.SECONDS);
+                timerExecutor.scheduleWithFixedDelay(timerRunnable, 0, 1, TimeUnit.SECONDS);
             } else Console.log("Files necessary to start a game are missing.");
         } catch (ParseException | IOException e) {
             e.printStackTrace();
@@ -200,8 +205,16 @@ public class GameEngine {
         Button exitButton = new ButtonBuilder("Save and exit").setTextColor(Color.RED)
                 .setCssScript("-jfx-button-type: RAISED; -fx-background-color: #760d84; -fx-text-fill: white;")
                 .onMouseClick(event -> {
-                    timedExecutor.shutdown();
-                    saveCurrentProgress(file);
+                    elapsedExecutor.shutdown();
+                    timerExecutor.shutdown();
+
+                    if (moves > 0) saveCurrentProgress(file);
+                    else {
+                        Console.log("Deleting the game file as no moves are made.");
+                        if (file.delete()) Console.log("Deleted game file successfully.");
+                        else Console.log("Could not delete game file");
+                    }
+
                     App.getStage().setScene(App.getScene());
                 })
                 .setPrefWidth(200)
@@ -216,11 +229,11 @@ public class GameEngine {
         // Nodes aligned using StackPane.
         StackPane.setMargin(nextMove, new Insets(40, 0, 0, 11));
         StackPane.setMargin(timeElapsed, new Insets(40, 0, 0, 11));
-        StackPane.setMargin(timerLeft, new Insets(10));
+        StackPane.setMargin(timeLeft, new Insets(10));
         StackPane.setAlignment(nextMove, Pos.TOP_RIGHT);
         StackPane.setAlignment(timeElapsed, Pos.TOP_LEFT);
-        StackPane.setAlignment(timerLeft, Pos.BOTTOM_RIGHT);
-        root.getChildren().addAll(nextMove, timeElapsed, timerLeft);
+        StackPane.setAlignment(timeLeft, Pos.BOTTOM_RIGHT);
+        root.getChildren().addAll(nextMove, timeElapsed, timeLeft);
 
         nextMove.setText(move.toString().toUpperCase());
         GraphicsEngine graphicsEngine = new GraphicsEngine();
@@ -228,7 +241,11 @@ public class GameEngine {
         NoughtsAndCrosses.createSceneBackground(root);
 
         if (!isGameOver())
-            App.getStage().setOnCloseRequest(event -> saveCurrentProgress(file));
+            App.getStage().setOnCloseRequest(event -> {
+                if (moves > 0) saveCurrentProgress(file);
+                else if (file.delete()) Console.log("Deleted game file as no moves were made.");
+                else Console.log("Could not delete game file.");
+            });
     }
 
     /**
@@ -248,6 +265,7 @@ public class GameEngine {
             jsonObject.put("timeO", jsonArrayO); // Contains the time taken for each move by O.
             jsonObject.put("LastMoveTime", timeForMove); // Contains how much time had elapsed already on the last move.
             writer.write(jsonObject.toJSONString());
+            writer.close();
             Console.log("Saved game progress at " + file.getAbsolutePath());
         } catch (IOException e) {
             e.printStackTrace();
@@ -294,6 +312,8 @@ public class GameEngine {
                 x++;
             }
         }
+
+        Console.log("Previous game nodes were found as " + array);
     }
 
     /**
@@ -352,15 +372,12 @@ public class GameEngine {
                             nextMove.setText(move.toString().toUpperCase());
 
                             timeForMove = 0; // Reset move timer.
+                            resetTimer();
                             checkForWin(); // Check if there is a win.
                         })
                         .build();
-            }
-        }
 
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                gameGrid.addRow(i, nodeMatrix[i][j]);
+                gameGrid.addRow(i, nodeMatrix[i][j]); // Add node to game grid.
             }
         }
 
@@ -368,7 +385,7 @@ public class GameEngine {
         gameGrid.setHgap(30);
         gameGrid.setPadding(new Insets(10));
         gameGrid.setAlignment(Pos.CENTER);
-        if (NoughtsAndCrosses.getWriter().getJsonKey("theme").equals(Themes.Dark.toString()))
+        if (NoughtsAndCrosses.getWriter().getJsonKey("theme").equals(Themes.DARK.toString()))
             gameGrid.setGridLinesVisible(true);
     }
 
@@ -379,7 +396,7 @@ public class GameEngine {
         Console.log("A win for " + winner.toString());
 
         saveCurrentProgress(theFile);
-        App.getStage().setOnCloseRequest(event -> System.exit(0)); // Save on close request no longer needed as the game is over.
+        App.getStage().setOnCloseRequest(null); // Save on close request no longer needed as the game is over.
 
         this.dashboard = new Dashboard(theFile);
         App.getStage().setScene(dashboard.getScene());
@@ -452,6 +469,17 @@ public class GameEngine {
      */
     private boolean isGameOver() {
         return finished;
+    }
+
+    /**
+     * Resets the time of the Timer Executor.
+     * As soon as a move is made the previous timer is stopped and a new one is started.
+     */
+    private void resetTimer() {
+        timeForMove = 0; // Reset time passed.
+        timerExecutor.shutdown();
+        timerExecutor = Executors.newSingleThreadScheduledExecutor();
+        timerExecutor.scheduleWithFixedDelay(timerRunnable, 0, 1, TimeUnit.SECONDS);
     }
 
     public Scene getScene() {

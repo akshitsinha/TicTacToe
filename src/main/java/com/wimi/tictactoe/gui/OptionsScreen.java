@@ -71,13 +71,13 @@ public class OptionsScreen {
                 .build();
         theme.setPrefWidth(50);
         theme.setOnMouseClicked(event -> {
-            Object object = NoughtsAndCrosses.getWriter().getJsonKey("theme");
-            if (object.equals(Themes.Light.toString())) { // Switch to Dark. (true)
-                NoughtsAndCrosses.getWriter().setJsonKey("theme", Themes.Dark.toString());
+            Object THEME = NoughtsAndCrosses.getWriter().getJsonKey("theme");
+            if (THEME.equals(Themes.LIGHT.toString())) { // Switch to Dark. (true)
+                NoughtsAndCrosses.getWriter().setJsonKey("theme", Themes.DARK.toString());
                 theme.setSelected(true);
                 Console.log("Set theme JSON value to " + NoughtsAndCrosses.getWriter().getJsonKey("theme"));
-            } else if (object.equals(Themes.Dark.toString())) { // Switch to Light. (false)
-                NoughtsAndCrosses.getWriter().setJsonKey("theme", Themes.Light.toString());
+            } else if (THEME.equals(Themes.DARK.toString())) { // Switch to Light. (false)
+                NoughtsAndCrosses.getWriter().setJsonKey("theme", Themes.LIGHT.toString());
                 theme.setSelected(false);
                 Console.log("Set theme JSON value to " + NoughtsAndCrosses.getWriter().getJsonKey("theme"));
             } else
@@ -89,8 +89,8 @@ public class OptionsScreen {
             NoughtsAndCrosses.createSceneBackground(App.getRoot());
         });
 
-        if (NoughtsAndCrosses.getWriter().getJsonKey("theme").equals(Themes.Dark.toString())) theme.setSelected(true);
-        else if (NoughtsAndCrosses.getWriter().getJsonKey("theme").equals(Themes.Light.toString()))
+        if (NoughtsAndCrosses.getWriter().getJsonKey("theme").equals(Themes.DARK.toString())) theme.setSelected(true);
+        else if (NoughtsAndCrosses.getWriter().getJsonKey("theme").equals(Themes.LIGHT.toString()))
             theme.setSelected(false);
         HBox themeHBox = new HBox();
         themeHBox.setAlignment(Pos.CENTER);

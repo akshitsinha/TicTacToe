@@ -70,10 +70,13 @@ public class Dashboard {
         JSONArray timesOfO = new JSONArray();
         if (jsonObject.containsKey("timeX") && jsonObject.containsKey("timeO")) {
             timesOfX = (JSONArray) jsonObject.get("timeX");
+            Console.log("Times of each move made by X is " + timesOfX);
+
             timesOfO = (JSONArray) jsonObject.get("timeO");
+            Console.log("Times of each move made by O is " + timesOfO);
         } else Console.log("Times of each move are missing.");
 
-        Text urbanName = new TextBuilder("Winner is " + Structure.nameOfMove(jsonObject.get("winner")) + ":")
+        Text urbanName = new TextBuilder(getJsonWinnerHeader(jsonObject))
                 .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 36))
                 .setColor(Color.rgb(167, 138, 167))
                 .build(); // Urban name as in Nought or Cross.
@@ -186,6 +189,12 @@ public class Dashboard {
         }
 
         System.out.println();
+    }
+
+    private String getJsonWinnerHeader(JSONObject object) {
+        if (Structure.nameOfMove(object.get("winner")).equals("NA")) {
+            return "Game is Draw!";
+        } else return ("Winner is " + Structure.nameOfMove(object.get("winner")) + ":");
     }
 
     /**

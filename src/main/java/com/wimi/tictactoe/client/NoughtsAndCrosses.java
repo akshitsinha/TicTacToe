@@ -40,9 +40,9 @@ public class NoughtsAndCrosses {
      * @param root The root of the scene to which the theme should be applied to.
      */
     public static void createSceneBackground(Pane root) {
-        if (writer.getJsonKey("theme").equals(Themes.Dark.toString())) // Dark theme
+        if (writer.getJsonKey("theme").equals(Themes.DARK.toString())) // Dark theme
             background = new Background(new BackgroundFill(Color.rgb(54, 57, 65), CornerRadii.EMPTY, Insets.EMPTY));
-        else if (writer.getJsonKey("theme").equals(Themes.Light.toString())) // Light theme
+        else if (writer.getJsonKey("theme").equals(Themes.LIGHT.toString())) // Light theme
             background = new Background(new BackgroundFill(Color.rgb(250, 250, 250), CornerRadii.EMPTY, Insets.EMPTY));
 
         root.setBackground(background);

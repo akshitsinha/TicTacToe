@@ -287,7 +287,7 @@ public class ContinueScreen {
             } else
                 Console.log("Could not delete the existing game file.");
         } else
-            Console.log("Th game file does not exist.");
+            Console.log("The game file does not exist.");
     }
 
     /**

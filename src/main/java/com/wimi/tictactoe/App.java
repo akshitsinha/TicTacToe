@@ -96,6 +96,7 @@ public class App extends Application {
     @Override
     public void init() {
         Console.log("Application started.");
+        Console.log("User OS: " + System.getProperty("os.name"));
         Console.log("Java Version: " + System.getProperty("java.version"));
         directoryCreator.createDirectories(); // Creates game directories.
         NoughtsAndCrosses.getWriter().init(); // Initializes game settings.

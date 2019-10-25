@@ -55,7 +55,7 @@ public class SettingsConfigurator {
                 else Console.log("Could not create the settings file.");
 
                 FileWriter fileWriter = new FileWriter(optionsAssets);
-                jsonObject.put("theme", Themes.Dark.toString()); // Dark Theme by default.
+                jsonObject.put("theme", Themes.DARK.toString()); // Dark Theme by default.
                 jsonObject.put("SFX", true); // SFX on by default.
                 jsonObject.put("maxTime", 5); // Max time allowed when playing on Timed mode.
                 jsonObject.put("difficulty", Levels.MEDIUM.toString()); // Difficulty when playing against computer.
@@ -94,7 +94,7 @@ public class SettingsConfigurator {
     /**
      * Returns whether a certain JSON key exists or not.
      *
-     * @param key THe key value to check for.
+     * @param key The key value to check for.
      */
     public boolean containsKey(Object key) {
         try (FileReader reader = new FileReader(optionsAssets)) {

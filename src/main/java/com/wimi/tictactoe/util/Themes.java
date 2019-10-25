@@ -17,6 +17,6 @@
 package com.wimi.tictactoe.util;
 
 public enum Themes {
-    Dark,
-    Light
+    DARK,
+    LIGHT
 }
