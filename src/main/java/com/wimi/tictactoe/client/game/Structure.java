@@ -16,9 +16,10 @@
 
 package com.wimi.tictactoe.client.game;
 
-import com.wimi.tictactoe.client.game.mechanics.GameEngine.States;
+import com.wimi.tictactoe.util.Console;
 import javafx.scene.control.Button;
 
+import java.util.Objects;
 import java.util.Random;
 
 /**
@@ -27,20 +28,37 @@ import java.util.Random;
 public class Structure {
 
     /**
-     * Returns an string of the modern name of a move.
-     *
-     * @param state A Move
-     * @return Urban name of the move.
+     * Checks if there is a win in the game.
      */
-    static String nameOfMove(Object state) {
-        switch (state.toString()) {
-            case "X":
-                return "Cross";
-            case "O":
-                return "Nought";
-            default:
-                return "NA";
+    protected boolean checkForWin(Button[] nodes) {
+        String[] moves = new String[nodes.length];
+        for (int i = 0; i < moves.length; i++) moves[i] = nodes[i].getText();
+        long timeForAlgorithm = System.nanoTime();
+
+        if ((Objects.equals(moves[0], moves[1]) && Objects.equals(moves[1], moves[2]) && !moves[0].equals(" ")) ||
+                (Objects.equals(moves[3], moves[4]) && Objects.equals(moves[4], moves[5]) && !moves[3].equals(" ")) ||
+                (Objects.equals(moves[6], moves[7]) && Objects.equals(moves[7], moves[8]) && !moves[6].equals(" ")) ||
+                (Objects.equals(moves[0], moves[3]) && Objects.equals(moves[3], moves[6]) && !moves[0].equals(" ")) ||
+                (Objects.equals(moves[1], moves[4]) && Objects.equals(moves[4], moves[7]) && !moves[1].equals(" ")) ||
+                (Objects.equals(moves[2], moves[5]) && Objects.equals(moves[5], moves[8]) && !moves[2].equals(" ")) ||
+                (Objects.equals(moves[0], moves[4]) && Objects.equals(moves[4], moves[8]) && !moves[0].equals(" ")) ||
+                (Objects.equals(moves[2], moves[4]) && Objects.equals(moves[4], moves[6]) && !moves[2].equals(" "))
+        ) {
+            Console.log("Time taken to determine game result was " + (System.nanoTime() - timeForAlgorithm) + "ns.");
+            return true;
         }
+
+        return false;
+    }
+
+    /**
+     * @return Total number of moves.
+     */
+    protected int getTotalMoves(Button[] buttons) {
+        int moves = 0;
+        for (Button button : buttons) if (!button.getText().equals(" ")) moves++;
+
+        return moves;
     }
 
     /**
@@ -49,7 +67,7 @@ public class Structure {
      * @param move The move to get the conjugate of.
      * @return The conjugate of a move.
      */
-    public States getConjugateMove(States move) {
+    protected States getConjugateMove(States move) {
         switch (move) {
             case X:
                 return States.O;
@@ -68,7 +86,7 @@ public class Structure {
      * @param string String text to be converted to a move state.
      * @return State of the move.
      */
-    public States getMove(String string) {
+    protected States getMoveID(String string) {
         if (string.equalsIgnoreCase(States.X.toString())) {
             return States.X;
         } else if (string.equalsIgnoreCase(States.O.toString())) {
@@ -79,27 +97,11 @@ public class Structure {
     }
 
     /**
-     * @param buttons Button matrix to get moves from.
-     * @return 2D Array of States which contains the state of the move. Nought, Cross or a Blank Space.
-     */
-    public States[][] getMoveStates(Button[][] buttons) {
-        States[][] moves = new States[buttons[0].length][buttons[1].length];
-
-        for (int i = 0; i < buttons[0].length; i++) {
-            for (int j = 0; j < buttons[1].length; j++) {
-                moves[i][j] = this.getMove(buttons[i][j].getText());
-            }
-        }
-
-        return moves;
-    }
-
-    /**
      * Generates a random number between 0 and 1 and decides the next move accordingly.
      *
      * @return State of a move.
      */
-    public States randMoveGen() {
+    protected States randomMoveGenerator() {
         Random random = new Random();
         int randInt = random.nextInt(2);
 
@@ -111,5 +113,17 @@ public class Structure {
             default:
                 return States.NONE;
         }
+    }
+
+    /**
+     * Contains the possible states of a tic tac toe game.
+     * <p>
+     * Blank(None), Cross(X) or a Nought(O).
+     * </p>
+     */
+    public enum States {
+        NONE,
+        X,
+        O
     }
 }

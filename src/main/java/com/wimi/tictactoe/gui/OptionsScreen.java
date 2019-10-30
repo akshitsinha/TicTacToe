@@ -54,7 +54,7 @@ public class OptionsScreen {
     public OptionsScreen() {
         Button goBack = new ButtonBuilder("Go back")
                 .setPrefWidth(200)
-                .setCssScript("-jfx-button-type: RAISED; -fx-background-color: #5b455e; -fx-text-fill: #eabead;")
+                .setStyle("-jfx-button-type: RAISED; -fx-background-color: #5b455e; -fx-text-fill: #eabead;")
                 .onMouseClick(event -> {
                     Console.log("User goes back to Home screen. Thru " + this.getClass().getSimpleName());
                     App.getStage().setScene(App.getScene());

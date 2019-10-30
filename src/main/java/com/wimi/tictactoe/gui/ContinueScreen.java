@@ -80,7 +80,7 @@ public class ContinueScreen {
         Button goBack = new ButtonBuilder("Go back")
                 .setPrefHeight(40)
                 .setPrefWidth(250)
-                .setCssScript("-jfx-button-type: RAISED; -fx-background-color: #5b455e; -fx-text-fill: #eabead;")
+                .setStyle("-jfx-button-type: RAISED; -fx-background-color: #5b455e; -fx-text-fill: #eabead;")
                 .onMouseClick(event -> {
                     Console.log("User goes back to Home screen. Thru " + this.getClass().getSimpleName());
                     App.getStage().setScene(App.getScene());
@@ -93,7 +93,7 @@ public class ContinueScreen {
         Button deleteAll = new ButtonBuilder("Delete all")
                 .setPrefHeight(40)
                 .setPrefWidth(250)
-                .setCssScript("-jfx-button-type: RAISED; -fx-background-color: gold; -fx-text-fill: blue;")
+                .setStyle("-jfx-button-type: RAISED; -fx-background-color: gold; -fx-text-fill: blue;")
                 .onMouseClick(event -> {
                     if (currentFiles.length == 0) Console.log("No game files to delete.");
                     for (File currentFile : currentFiles) {
@@ -208,7 +208,7 @@ public class ContinueScreen {
                     popupStage.close();
                     refreshExistingGames();
                 })
-                .setCssScript("-jfx-button-type: RAISED; -fx-background-color: gold; -fx-text-fill: green;")
+                .setStyle("-jfx-button-type: RAISED; -fx-background-color: gold; -fx-text-fill: green;")
                 .build();
         Button cancellationButton = new ButtonBuilder("Cancel")
                 .setPrefWidth(100)
@@ -216,7 +216,7 @@ public class ContinueScreen {
                 .setLayoutY(popupScene.getHeight() / 2 + 50)
                 .onMouseClick(event -> popupStage.close())
                 .setTextColor(Color.RED)
-                .setCssScript("-jfx-button-type: RAISED; -fx-background-color: aqua; -fx-text-fill: red;")
+                .setStyle("-jfx-button-type: RAISED; -fx-background-color: aqua; -fx-text-fill: red;")
                 .build();
 
         popupRoot.getChildren().add(commandMessage);
@@ -256,7 +256,7 @@ public class ContinueScreen {
                         popupStage.close();
                     }
                 })
-                .setCssScript("-jfx-button-type: RAISED; -fx-background-color: gold; -fx-text-fill: green;")
+                .setStyle("-jfx-button-type: RAISED; -fx-background-color: gold; -fx-text-fill: green;")
                 .build();
         Button cancellationButton = new ButtonBuilder("Cancel")
                 .setPrefWidth(100)
@@ -264,7 +264,7 @@ public class ContinueScreen {
                 .setLayoutY(popupScene.getHeight() / 2 + 50)
                 .onMouseClick(event -> popupStage.close())
                 .setTextColor(Color.RED)
-                .setCssScript("-jfx-button-type: RAISED; -fx-background-color: aqua; -fx-text-fill: red;")
+                .setStyle("-jfx-button-type: RAISED; -fx-background-color: aqua; -fx-text-fill: red;")
                 .build();
 
         popupRoot.getChildren().addAll(commandMessage, notificationText); // Texts

@@ -56,7 +56,7 @@ public class GameConfigurator {
         VBox buttonWrapper = new VBox();
         Button cancelAndExit = new ButtonBuilder("Cancel and exit")
                 .setTextColor(Color.RED)
-                .setCssScript("-jfx-button-type: RAISED; -fx-background-color: #636989; -fx-text-fill: white;")
+                .setStyle("-jfx-button-type: RAISED; -fx-background-color: #636989; -fx-text-fill: white;")
                 .setPrefWidth(200)
                 .onMouseClick(event -> exit(file))
                 .build();
@@ -67,11 +67,11 @@ public class GameConfigurator {
 
         Button gameSelectHuman = new ButtonBuilder("Play against Human?") // R1 C1
                 .setPrefWidth(200)
-                .setCssScript("-jfx-button-type: RAISED; -fx-background-color: #760d84; -fx-text-fill: white;")
+                .setStyle("-jfx-button-type: RAISED; -fx-background-color: #760d84; -fx-text-fill: white;")
                 .build();
         Button gameSelectComp = new ButtonBuilder("Play against computer?") // R1 C2
                 .setPrefWidth(200)
-                .setCssScript("-jfx-button-type: RAISED; -fx-background-color: #895e18; -fx-text-fill: white;")
+                .setStyle("-jfx-button-type: RAISED; -fx-background-color: #895e18; -fx-text-fill: white;")
                 .build();
 
         gameSelectComp.setDisable(true);
@@ -79,12 +79,12 @@ public class GameConfigurator {
 
         Button timedGame = new ButtonBuilder("Timed Mode") // R2 C1
                 .setPrefWidth(200)
-                .setCssScript("-jfx-button-type: RAISED; -fx-background-color: #760d84; -fx-text-fill: white;")
+                .setStyle("-jfx-button-type: RAISED; -fx-background-color: #760d84; -fx-text-fill: white;")
                 .setDisabled(true)
                 .build();
         Button notTimedGame = new ButtonBuilder("No Time Limit Mode") // R2 C2
                 .setPrefWidth(200)
-                .setCssScript("-jfx-button-type: RAISED; -fx-background-color: #895e18; -fx-text-fill: white;")
+                .setStyle("-jfx-button-type: RAISED; -fx-background-color: #895e18; -fx-text-fill: white;")
                 .setDisabled(true)
                 .build();
 

@@ -58,7 +58,7 @@ public class CreationScreen {
             .build();
     private final Button createGame = new ButtonBuilder("Create")
             .setPrefWidth(200)
-            .setCssScript("-jfx-button-type: RAISED; -fx-background-color: gold; -fx-text-fill: blue;")
+            .setStyle("-jfx-button-type: RAISED; -fx-background-color: gold; -fx-text-fill: blue;")
             .setTextColor(Color.BLUE)
             .onMouseClick(event -> {
                 if (nameField.getText().isEmpty()) notificator("Name of the game cannot be empty!");
@@ -88,7 +88,7 @@ public class CreationScreen {
     public CreationScreen() {
         Button goBack = new ButtonBuilder("Go back")
                 .setPrefWidth(200)
-                .setCssScript("-jfx-button-type: RAISED; -fx-background-color: #5b455e; -fx-text-fill: #eabead;")
+                .setStyle("-jfx-button-type: RAISED; -fx-background-color: #5b455e; -fx-text-fill: #eabead;")
                 .onMouseClick(event -> {
                     Console.log("User goes back to Home screen. Thru " + this.getClass().getSimpleName());
                     App.getStage().setScene(App.getScene());

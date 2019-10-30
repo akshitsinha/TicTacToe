@@ -44,15 +44,17 @@ import javafx.scene.text.Text;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 
 /**
  * @Description Dashboard or a Statistics page for game progress and result.
  */
 @SuppressWarnings("unchecked")
-public class Dashboard {
+public class Dashboard extends Structure {
 
     private final BorderPane root = new BorderPane();
     private final Scene scene = new Scene(root, 1366, 768);
@@ -62,7 +64,7 @@ public class Dashboard {
         try (FileReader reader = new FileReader(file)) {
             jsonObject = (JSONObject) new JSONParser().parse(reader);
             printNodes((JSONArray) jsonObject.get("nodes"));
-        } catch (Exception e) {
+        } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
 
@@ -103,7 +105,7 @@ public class Dashboard {
                 .setColor(Color.GREENYELLOW)
                 .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 36))
                 .build();
-        Text gameModeBanner = new TextBuilder("Game mode: " + jsonObject.get("mode").toString().substring(0, 1).toUpperCase() + jsonObject.get("mode").toString().substring(1))
+        Text gameModeBanner = new TextBuilder("Game mode: " + getJsonGameModeHeader(jsonObject))
                 .setColor(Color.GREENYELLOW)
                 .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 36))
                 .build();
@@ -118,7 +120,7 @@ public class Dashboard {
         Button goBack = new ButtonBuilder("Go back to Home Screen")
                 .setPrefHeight(40)
                 .setPrefWidth(250)
-                .setCssScript("-jfx-button-type: RAISED; -fx-background-color: #5b455e; -fx-text-fill: #eabead;")
+                .setStyle("-jfx-button-type: RAISED; -fx-background-color: #5b455e; -fx-text-fill: #eabead;")
                 .onMouseClick(event -> {
                     Console.log("User goes back to Home screen. Thru " + this.getClass().getSimpleName());
                     App.getStage().setScene(App.getScene());
@@ -192,14 +194,34 @@ public class Dashboard {
     }
 
     private String getJsonWinnerHeader(JSONObject object) {
-        if (Structure.nameOfMove(object.get("winner")).equals("NA")) {
-            return "Game is Draw!";
-        } else return ("Winner is " + Structure.nameOfMove(object.get("winner")) + ":");
+        if (nameOfMove(object.get("winner")).equals("NA")) return "Game is Draw!";
+        else return ("Winner is " + nameOfMove(object.get("winner")) + ":");
+    }
+
+    private String getJsonGameModeHeader(JSONObject object) {
+        if (object.get("mode").equals("untimed")) return "Unlimited Time";
+        else return "Timed";
+    }
+
+    /**
+     * Returns the modern name of a move.
+     *
+     * @param state The move to get the name of.
+     * @return Urban name of the move.
+     */
+    private String nameOfMove(Object state) {
+        switch (state.toString()) {
+            case "X":
+                return "Cross";
+            case "O":
+                return "Nought";
+            default:
+                return "NA";
+        }
     }
 
     /**
      * Returns the total time taken by a move.
-     * Sum of all elements in a JSON array.
      *
      * @param array The JSON Array to take the elements from.
      * @return Total time.

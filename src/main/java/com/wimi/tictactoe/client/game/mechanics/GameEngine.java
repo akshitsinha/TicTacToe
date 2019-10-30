@@ -51,14 +51,13 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @Description The main class where the tic tac toe mechanics takes place.
+ * @Description The main class where the Noughts and Crosses mechanics takes place.
  */
-@SuppressWarnings({"unchecked", "CanBeFinal"})
-public class GameEngine {
+@SuppressWarnings("unchecked")
+public class GameEngine extends Structure {
 
     private final StackPane root = new StackPane();
     private final Scene scene = new Scene(root, 1366, 768); // Default game dimensions
-    private final Structure structure = new Structure();
     private final Text timeElapsed = new TextBuilder("Initiating..") // Shows the time elapsed since game start.
             .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 42))
             .setColor(Color.BROWN)
@@ -71,8 +70,7 @@ public class GameEngine {
             .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 42))
             .setColor(Color.GREENYELLOW)
             .build();
-    private final int n = 3;
-    private final Button[][] nodeMatrix = new Button[n][n];
+    private final Button[] gameNodes = new Button[9];
     private final GridPane gameGrid = new GridPane();
     private Dashboard dashboard;
     private File theFile;
@@ -87,18 +85,18 @@ public class GameEngine {
     private long maxTimeAllowed = 0; // Max time allowed when the game is in timed mode.
     private int movesX = 0; // Total moves made of X
     private int movesO = 0; // Total moves made of O
-    private int moves = 0; // Total number of moves.
+    private int totalMoves = 0; // Total number of moves.
     private States move = States.NONE; // The current move.
     private States winner = States.NONE; // The winner of the game.
     private Runnable timerRunnable = () -> {
         if (finished) timerExecutor.shutdown();
         else {
-            if (timed && moves > 0) {
+            if (timed && totalMoves > 0) {
                 timeLeft.setText(String.valueOf(maxTimeAllowed - timeForMove));
                 if (timeForMove >= maxTimeAllowed) {
-                    winner = structure.getConjugateMove(move); // The other player is the winner as the opponent couldn't make a move in time.
+                    winner = getConjugateMove(move); // The other player is the winner as the opponent couldn't make a move in time.
                     Platform.runLater(this::win); // Run on JavaFX thread.
-                    Console.log("Time is up for " + move + " to make a move. Hence " + structure.getConjugateMove(move).toString() + " is the winner.");
+                    Console.log("Time is up for " + move + " to make a move. Hence " + getConjugateMove(move).toString() + " is the winner.");
                     finished = true;
                     timerExecutor.shutdown();
                 }
@@ -124,13 +122,13 @@ public class GameEngine {
         };
 
         try (FileReader reader = new FileReader(file)) {
-            Console.log("Reading the game file.");
+            Console.log("Reading the game file...");
             jsonObject = (JSONObject) new JSONParser().parse(reader);
             reader.close();
 
             if (jsonObject.containsKey("state") && jsonObject.get("state").equals(true) && jsonObject.containsKey("winner")) {
                 // Game already finished state.
-                winner = structure.getMove(jsonObject.get("winner").toString());
+                winner = getMoveID(jsonObject.get("winner").toString());
                 Console.log("The game is already finished. The game will be switched to the Dashboard.");
 
                 this.dashboard = new Dashboard(file);
@@ -138,26 +136,23 @@ public class GameEngine {
             } else if (jsonObject.containsKey("nodes") && jsonObject.containsKey("ElapsedTime") && jsonObject.containsKey("mode") && jsonObject.containsKey("opponent")) {
                 // Resume game state.
                 Console.log("Elements necessary to resume the game are found.");
-
-                JSONArray jsonArray = (JSONArray) jsonObject.get("nodes");
                 setupMatrix();
-                setGameProgress(jsonArray);
+                setGameProgress((JSONArray) jsonObject.get("nodes"));
 
                 timeForMove = (long) jsonObject.get("LastMoveTime");
                 Console.log("Last move already took " + timeForMove + " seconds.");
 
                 timed = jsonObject.get("mode").equals("timed");
-
                 maxTimeAllowed = (long) NoughtsAndCrosses.getWriter().getJsonKey("maxTime");
-                if (timed)
-                    Console.log("Maximum time allowed in this Timed game mode will be " + maxTimeAllowed + " seconds.");
+
+                if (timed) Console.log("Max time allowed in this Timed game mode is " + maxTimeAllowed + " seconds.");
                 else Console.log("This game is being played in Unlimited Time mode.");
 
                 if (timeForMove >= maxTimeAllowed) {
                     Console.log("Max time allowed is already reached. The game will be switched to the Dashboard.");
                     this.dashboard = new Dashboard(file);
                     finished = true;
-                } else if (moves > 0) {
+                } else if (totalMoves > 0) {
                     elapsedExecutor.scheduleWithFixedDelay(elapsedRunnable, 0, 1, TimeUnit.SECONDS);
                     timerExecutor.scheduleWithFixedDelay(timerRunnable, 0, 1, TimeUnit.SECONDS);
                 }
@@ -172,14 +167,14 @@ public class GameEngine {
                 Console.log("Previous time played was " + timePlayed + " seconds.");
 
                 if (jsonObject.containsKey("move")) {
-                    move = structure.getMove(jsonObject.get("move").toString());
-                    Console.log("The last move was " + structure.getConjugateMove(move));
+                    move = getMoveID(jsonObject.get("move").toString());
+                    Console.log("The last move was " + getConjugateMove(move));
                 } else getCurrentMove();
             } else if (jsonObject.containsKey("mode") && jsonObject.containsKey("opponent")) {
                 // Default game state.
                 Console.log("The current game is running for the first time.");
 
-                move = structure.randMoveGen(); // Starting move.
+                move = randomMoveGenerator(); // Starting move.
                 Console.log("The starting move will be " + move.toString());
 
                 timed = jsonObject.get("mode").equals("timed");
@@ -203,16 +198,16 @@ public class GameEngine {
         }
 
         Button exitButton = new ButtonBuilder("Save and exit").setTextColor(Color.RED)
-                .setCssScript("-jfx-button-type: RAISED; -fx-background-color: #760d84; -fx-text-fill: white;")
+                .setStyle("-jfx-button-type: RAISED; -fx-background-color: #760d84; -fx-text-fill: white;")
                 .onMouseClick(event -> {
                     elapsedExecutor.shutdown();
                     timerExecutor.shutdown();
 
-                    if (moves > 0) saveCurrentProgress(file);
+                    if (totalMoves > 0) saveCurrentProgress(file);
                     else {
                         Console.log("Deleting the game file as no moves are made.");
                         if (file.delete()) Console.log("Deleted game file successfully.");
-                        else Console.log("Could not delete game file");
+                        else Console.log("Could not delete game file.");
                     }
 
                     App.getStage().setScene(App.getScene());
@@ -242,7 +237,7 @@ public class GameEngine {
 
         if (!isGameOver())
             App.getStage().setOnCloseRequest(event -> {
-                if (moves > 0) saveCurrentProgress(file);
+                if (totalMoves > 0) saveCurrentProgress(file);
                 else if (file.delete()) Console.log("Deleted game file as no moves were made.");
                 else Console.log("Could not delete game file.");
             });
@@ -273,17 +268,14 @@ public class GameEngine {
     }
 
     /**
-     * Gets the JSON Array of current tic tac toe game progress.
+     * Gets the JSON Array of current Tic Tac Toe game progress.
      *
-     * @return Returns a JSON Array from 0 to n which contains the moves of the
-     * game.
+     * @return Returns a JSON Array which contains the moves of the game.
      */
     private JSONArray getGameProgress() {
         JSONArray array = new JSONArray();
-        for (int i = 0; i < n; i++) { // Rows
-            for (int j = 0; j < n; j++) { // Columns
-                array.add(nodeMatrix[i][j].getText());
-            }
+        for (int i = 0; i < 9; i++) {
+            array.add(gameNodes[i].getText());
         }
 
         return array;
@@ -296,21 +288,16 @@ public class GameEngine {
      *              from.
      */
     private void setGameProgress(JSONArray array) {
-        int x = 0;
-        for (int i = 0; i < nodeMatrix[0].length; i++) {
-            for (int j = 0; j < nodeMatrix[1].length; j++) {
-                nodeMatrix[i][j].setText(array.get(x).toString());
+        for (int i = 0; i < 9; i++) {
+            gameNodes[i].setText(array.get(i).toString());
+            if (!gameNodes[i].getText().equals(" ")) gameNodes[i].setDisable(true);
 
-                if (!nodeMatrix[i][j].getText().equals(" ")) nodeMatrix[i][j].setDisable(true);
+            if (getMoveID(gameNodes[i].getText()).equals(States.X))
+                movesX++; // Number of moves which are Crosses.
+            else if (getMoveID(gameNodes[i].getText()).equals(States.O))
+                movesO++; // Number of moves which are Noughts.
 
-                if (structure.getMove(nodeMatrix[i][j].getText()).equals(States.X))
-                    movesX++; // Number of moves which are Crosses.
-                else if (structure.getMove(nodeMatrix[i][j].getText()).equals(States.O))
-                    movesO++; // Number of moves which are Noughts.
-
-                moves = movesX + movesO; // Add both to get the total number of moves.
-                x++;
-            }
+            totalMoves = movesX + movesO; // Add both to get the total number of moves.
         }
 
         Console.log("Previous game nodes were found as " + array);
@@ -321,64 +308,72 @@ public class GameEngine {
      * Used only when the next move is not specified in JSON of the game file.
      */
     private void getCurrentMove() {
-        Console.log("The method to get the next move was triggered. Possibly due to 'move' node not being found in the JSON save file.");
+        Console.log("The method to get the next move is being run, possibly due to 'move' node not being found in the JSON save file.");
 
         // Figure out the next move based on the moves already made.
         if (movesX > movesO) move = States.O;
         else if (movesX < movesO) move = States.X;
         else { // Pick up a random move if the moves by both sides are the same.
-            move = structure.randMoveGen();
+            move = randomMoveGenerator();
             Console.log("Both moves are equal. Choosing the next move randomly.");
         }
 
-        Console.log("Set " + move.toString().toUpperCase() + " as the current move.");
+        Console.log("Set " + move + " as the next move.");
     }
 
     /**
      * Sets up each buttons of the game grid matrix and its properties.
      */
     private void setupMatrix() {
-        for (int i = 0; i < n; i++) { // Setting up each button and its properties.
-            for (int j = 0; j < n; j++) {
-                int finalI = i; // Iteration number has to be effectively final for usage in lambda expressions.
-                int finalJ = j;
-                nodeMatrix[i][j] = new ButtonBuilder(" ")
-                        .setFont(Font.font("Arial", FontWeight.BOLD, 32))
-                        .setPrefHeight(100)
-                        .setPrefWidth(100)
-                        .setCssScript("-jfx-button-type: RAISED; -fx-background-color: gold; -fx-text-fill: blue;")
-                        .onMouseClick(event -> {
-                            nodeMatrix[finalI][finalJ].setText(move.toString());
-                            nodeMatrix[finalI][finalJ].setDisable(true);
+        for (int i = 0; i < 9; i++) { // Setting up each button and its properties.
+            int finalI = i; // Iteration number has to be effectively final for usage in lambda expressions.
+            gameNodes[i] = new ButtonBuilder(" ")
+                    .setFont(Font.font("Arial", FontWeight.BOLD, 32))
+                    .setPrefHeight(100)
+                    .setPrefWidth(100)
+                    .setStyle("-jfx-button-type: RAISED; -fx-background-color: gold; -fx-text-fill: blue;")
+                    .onMouseClick(event -> {
+                        gameNodes[finalI].setText(move.toString());
+                        gameNodes[finalI].setDisable(true);
 
-                            switch (move) {
-                                case X:
-                                    Console.log("Time taken for X's move " + (movesX + 1) + " was " + timeForMove + "s");
-                                    movesX++;
-                                    jsonArrayX.add(timeForMove);
-                                    move = States.O;
-                                    break;
-                                case O:
-                                    Console.log("Time taken for O's move " + (movesO + 1) + " was " + timeForMove + "s");
-                                    movesO++;
-                                    jsonArrayO.add(timeForMove);
-                                    move = States.X;
-                                    break;
-                                default:
-                                    throw new IllegalStateException("Check the move passed! Move can only be a nought or a cross.");
-                            }
+                        switch (move) {
+                            case X:
+                                Console.log("Time taken for X's move " + (movesX + 1) + " was " + timeForMove + "s");
+                                movesX++;
+                                jsonArrayX.add(timeForMove);
+                                move = States.O;
+                                break;
+                            case O:
+                                Console.log("Time taken for O's move " + (movesO + 1) + " was " + timeForMove + "s");
+                                movesO++;
+                                jsonArrayO.add(timeForMove);
+                                move = States.X;
+                                break;
+                            default:
+                                throw new IllegalStateException("Check the move passed! Move can only be a nought or a cross.");
+                        }
 
-                            moves = movesO + movesX;
-                            nextMove.setText(move.toString().toUpperCase());
+                        totalMoves = movesO + movesX;
+                        nextMove.setText(move.toString().toUpperCase());
 
-                            timeForMove = 0; // Reset move timer.
-                            resetTimer();
-                            checkForWin(); // Check if there is a win.
-                        })
-                        .build();
+                        if (checkForWin(gameNodes)) {
+                            winner = getConjugateMove(move);
+                            finished = true;
+                            win();
+                        } else if (getTotalMoves(gameNodes) == 9) {
+                            Console.log("The game has resulted in a draw!");
+                            finished = true;
+                            win();
+                        } else resetTimer();
+                    })
+                    .build();
+        }
 
-                gameGrid.addRow(i, nodeMatrix[i][j]); // Add node to game grid.
-            }
+        int x = 0;
+        for (int i = 0; i < 9; i++) {
+            gameGrid.addColumn(x, gameNodes[i]);
+            x++;
+            if (x == 3) x = 0;
         }
 
         gameGrid.setVgap(30);
@@ -403,68 +398,6 @@ public class GameEngine {
     }
 
     /**
-     * Check if there is a win in the game yet.
-     */
-    private void checkForWin() {
-        States[][] checkWinMoves = structure.getMoveStates(nodeMatrix);
-        long timeForAlgorithm = System.nanoTime(); // Used to calculate the time taken for the system to conclude the winner.
-
-        for (int i = 0; i < n; i++) {
-            if (checkWinMoves[i][0] == checkWinMoves[i][1] && checkWinMoves[i][1] == checkWinMoves[i][2]) { // Check for win in rows.
-                if (checkWinMoves[i][0] != States.NONE) {
-                    Console.log("Win found in row: " + (i + 1));
-                    winner = structure.getConjugateMove(move); // The last move was the winner.
-                    finished = true;
-                    Console.log("Time taken for algorithm to check for game result was " + (System.nanoTime() - timeForAlgorithm) + "ns.");
-                    win();
-                    return;
-                }
-            }
-
-            if (checkWinMoves[0][i] == checkWinMoves[1][i] && checkWinMoves[1][i] == checkWinMoves[2][i]) { // Check for win in columns.
-                if (checkWinMoves[0][i] != States.NONE) {
-                    Console.log("Win found in column: " + (i + 1));
-                    winner = structure.getConjugateMove(move);
-                    finished = true;
-                    Console.log("Time taken for algorithm to check for game result was " + (System.nanoTime() - timeForAlgorithm) + "ns.");
-                    win();
-                    return;
-                }
-            }
-        }
-
-        if (checkWinMoves[0][0] == checkWinMoves[1][1] && checkWinMoves[1][1] == checkWinMoves[2][2]) { // Check for win diagonally.
-            if (checkWinMoves[0][0] != States.NONE) {
-                Console.log("A win is found diagonally.");
-                winner = structure.getConjugateMove(move);
-                finished = true;
-                Console.log("Time taken for algorithm to check for game result was " + (System.nanoTime() - timeForAlgorithm) + "ns.");
-                win();
-                return;
-            }
-        }
-
-        if (checkWinMoves[0][2] == checkWinMoves[1][1] && checkWinMoves[1][1] == checkWinMoves[2][0]) { // Check for win anti-diagonally.
-            if (checkWinMoves[0][2] != States.NONE) {
-                Console.log("A win is found anti-diagonally.");
-                winner = structure.getConjugateMove(move);
-                finished = true;
-                Console.log("Time taken for algorithm to check for game result was " + (System.nanoTime() - timeForAlgorithm) + "ns.");
-                win();
-                return;
-            }
-        }
-
-        if (moves == 9) { // Game draw condition.
-            winner = States.NONE;
-            Console.log("The game is a draw!");
-
-            finished = true;
-            win(); // Runs block of code which switches to the dashboard scene.
-        }
-    }
-
-    /**
      * @return Is game over
      */
     private boolean isGameOver() {
@@ -476,7 +409,7 @@ public class GameEngine {
      * As soon as a move is made the previous timer is stopped and a new one is started.
      */
     private void resetTimer() {
-        timeForMove = 0; // Reset time passed.
+        timeForMove = 0; // Reset time elapsed.
         timerExecutor.shutdown();
         timerExecutor = Executors.newSingleThreadScheduledExecutor();
         timerExecutor.scheduleWithFixedDelay(timerRunnable, 0, 1, TimeUnit.SECONDS);
@@ -487,15 +420,5 @@ public class GameEngine {
         else return scene;
     }
 
-    /**
-     * Contains the possible states of a tic tac toe game.
-     * <p>
-     * Blank(None), Cross(X) or a Nought(O).
-     * </p>
-     */
-    public enum States {
-        NONE,
-        X,
-        O
-    }
+
 }

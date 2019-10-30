@@ -40,12 +40,12 @@ public class ButtonBuilder {
     }
 
     /**
-     * Sets the CSS script to the button.
+     * Sets the CSS style script to the button.
      *
-     * @param css CSS script.
+     * @param css Style Script.
      */
-    public ButtonBuilder setCssScript(String css) {
-        this.button.setStyle(css);
+    public ButtonBuilder setStyle(String css) {
+        button.setStyle(css);
         return this;
     }
 

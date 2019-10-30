@@ -62,19 +62,19 @@ public class App extends Application {
             .build();
     private final Button startButton = new ButtonBuilder("New Game")
             .setPrefWidth(200)
-            .setCssScript("-jfx-button-type: RAISED; -fx-background-color: red; -fx-text-fill: white;")
+            .setStyle("-jfx-button-type: RAISED; -fx-background-color: red; -fx-text-fill: white;")
             .build();
     private final Button continueGameButton = new ButtonBuilder("Continue game")
             .setPrefWidth(200)
-            .setCssScript("-jfx-button-type: RAISED; -fx-background-color: #760d84; -fx-text-fill: white;")
+            .setStyle("-jfx-button-type: RAISED; -fx-background-color: #760d84; -fx-text-fill: white;")
             .build();
     private final Button exitGameButton = new ButtonBuilder("Exit game")
             .setPrefWidth(200)
-            .setCssScript("-jfx-button-type: RAISED; -fx-background-color: blue; -fx-text-fill: white;")
+            .setStyle("-jfx-button-type: RAISED; -fx-background-color: blue; -fx-text-fill: white;")
             .build();
     private final Button optionsGameButton = new ButtonBuilder("Options")
             .setPrefWidth(200)
-            .setCssScript("-jfx-button-type: RAISED; -fx-background-color: #c20e3e; -fx-text-fill: white;")
+            .setStyle("-jfx-button-type: RAISED; -fx-background-color: #c20e3e; -fx-text-fill: white;")
             .build();
 
     public static void main(String[] args) {
