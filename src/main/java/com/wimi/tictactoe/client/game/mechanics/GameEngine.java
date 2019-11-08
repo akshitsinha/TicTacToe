@@ -20,8 +20,8 @@ import com.wimi.tictactoe.App;
 import com.wimi.tictactoe.builders.ButtonBuilder;
 import com.wimi.tictactoe.builders.TextBuilder;
 import com.wimi.tictactoe.client.NoughtsAndCrosses;
-import com.wimi.tictactoe.client.game.Dashboard;
 import com.wimi.tictactoe.client.game.Structure;
+import com.wimi.tictactoe.gui.Dashboard;
 import com.wimi.tictactoe.util.Console;
 import com.wimi.tictactoe.util.Themes;
 import javafx.application.Platform;
@@ -85,19 +85,17 @@ public class GameEngine extends Structure {
     private long maxTimeAllowed = 0; // Max time allowed when the game is in timed mode.
     private int movesX = 0; // Total moves made of X
     private int movesO = 0; // Total moves made of O
-    private int totalMoves = 0; // Total number of moves.
     private States move = States.NONE; // The current move.
     private States winner = States.NONE; // The winner of the game.
     private Runnable timerRunnable = () -> {
         if (finished) timerExecutor.shutdown();
         else {
-            if (timed && totalMoves > 0) {
+            if (timed && getTotalMoves(gameNodes) > 0) {
                 timeLeft.setText(String.valueOf(maxTimeAllowed - timeForMove));
                 if (timeForMove >= maxTimeAllowed) {
                     winner = getConjugateMove(move); // The other player is the winner as the opponent couldn't make a move in time.
                     Platform.runLater(this::win); // Run on JavaFX thread.
                     Console.log("Time is up for " + move + " to make a move. Hence " + getConjugateMove(move).toString() + " is the winner.");
-                    finished = true;
                     timerExecutor.shutdown();
                 }
             }
@@ -148,11 +146,11 @@ public class GameEngine extends Structure {
                 if (timed) Console.log("Max time allowed in this Timed game mode is " + maxTimeAllowed + " seconds.");
                 else Console.log("This game is being played in Unlimited Time mode.");
 
-                if (timeForMove >= maxTimeAllowed) {
+                if (timed && timeForMove >= maxTimeAllowed) {
                     Console.log("Max time allowed is already reached. The game will be switched to the Dashboard.");
                     this.dashboard = new Dashboard(file);
                     finished = true;
-                } else if (totalMoves > 0) {
+                } else if (getTotalMoves(gameNodes) > 0) {
                     elapsedExecutor.scheduleWithFixedDelay(elapsedRunnable, 0, 1, TimeUnit.SECONDS);
                     timerExecutor.scheduleWithFixedDelay(timerRunnable, 0, 1, TimeUnit.SECONDS);
                 }
@@ -169,7 +167,10 @@ public class GameEngine extends Structure {
                 if (jsonObject.containsKey("move")) {
                     move = getMoveID(jsonObject.get("move").toString());
                     Console.log("The last move was " + getConjugateMove(move));
-                } else getCurrentMove();
+                } else {
+                    move = getCurrentMove(movesX, movesO);
+                    Console.log("Set " + move + " as the next move.");
+                }
             } else if (jsonObject.containsKey("mode") && jsonObject.containsKey("opponent")) {
                 // Default game state.
                 Console.log("The current game is running for the first time.");
@@ -203,7 +204,7 @@ public class GameEngine extends Structure {
                     elapsedExecutor.shutdown();
                     timerExecutor.shutdown();
 
-                    if (totalMoves > 0) saveCurrentProgress(file);
+                    if (getTotalMoves(gameNodes) > 0) saveCurrentProgress(file);
                     else {
                         Console.log("Deleting the game file as no moves are made.");
                         if (file.delete()) Console.log("Deleted game file successfully.");
@@ -233,11 +234,11 @@ public class GameEngine extends Structure {
         nextMove.setText(move.toString().toUpperCase());
         GraphicsEngine graphicsEngine = new GraphicsEngine();
         graphicsEngine.setRoot(root);
-        NoughtsAndCrosses.createSceneBackground(root);
+        NoughtsAndCrosses.setSceneBackground(root);
 
         if (!isGameOver())
             App.getStage().setOnCloseRequest(event -> {
-                if (totalMoves > 0) saveCurrentProgress(file);
+                if (getTotalMoves(gameNodes) > 0) saveCurrentProgress(file);
                 else if (file.delete()) Console.log("Deleted game file as no moves were made.");
                 else Console.log("Could not delete game file.");
             });
@@ -296,8 +297,6 @@ public class GameEngine extends Structure {
                 movesX++; // Number of moves which are Crosses.
             else if (getMoveID(gameNodes[i].getText()).equals(States.O))
                 movesO++; // Number of moves which are Noughts.
-
-            totalMoves = movesX + movesO; // Add both to get the total number of moves.
         }
 
         Console.log("Previous game nodes were found as " + array);
@@ -306,26 +305,26 @@ public class GameEngine extends Structure {
     /**
      * Gets the next move based on moves already made or generates a random move.
      * Used only when the next move is not specified in JSON of the game file.
+     *
+     * @param movesX Total number of moves of Cross.
+     * @param movesO Total number of moves of Nought.
+     * @return The next move.
      */
-    private void getCurrentMove() {
-        Console.log("The method to get the next move is being run, possibly due to 'move' node not being found in the JSON save file.");
-
+    private States getCurrentMove(int movesX, int movesO) {
         // Figure out the next move based on the moves already made.
-        if (movesX > movesO) move = States.O;
-        else if (movesX < movesO) move = States.X;
-        else { // Pick up a random move if the moves by both sides are the same.
-            move = randomMoveGenerator();
+        if (movesX > movesO) return States.O;
+        else if (movesX < movesO) return States.X;
+        else { // Pick up a random move if the moves by both sides are equal.
             Console.log("Both moves are equal. Choosing the next move randomly.");
+            return randomMoveGenerator();
         }
-
-        Console.log("Set " + move + " as the next move.");
     }
 
     /**
-     * Sets up each buttons of the game grid matrix and its properties.
+     * Sets up each button of the game and its properties.
      */
     private void setupMatrix() {
-        for (int i = 0; i < 9; i++) { // Setting up each button and its properties.
+        for (int i = 0; i < 9; i++) {
             int finalI = i; // Iteration number has to be effectively final for usage in lambda expressions.
             gameNodes[i] = new ButtonBuilder(" ")
                     .setFont(Font.font("Arial", FontWeight.BOLD, 32))
@@ -353,16 +352,13 @@ public class GameEngine extends Structure {
                                 throw new IllegalStateException("Check the move passed! Move can only be a nought or a cross.");
                         }
 
-                        totalMoves = movesO + movesX;
-                        nextMove.setText(move.toString().toUpperCase());
+                        nextMove.setText(move.toString());
 
                         if (checkForWin(gameNodes)) {
                             winner = getConjugateMove(move);
-                            finished = true;
                             win();
-                        } else if (getTotalMoves(gameNodes) == 9) {
+                        } else if (getTotalMoves(gameNodes) >= 9) {
                             Console.log("The game has resulted in a draw!");
-                            finished = true;
                             win();
                         } else resetTimer();
                     })
@@ -389,6 +385,7 @@ public class GameEngine extends Structure {
      */
     private synchronized void win() {
         Console.log("A win for " + winner.toString());
+        finished = true;
 
         saveCurrentProgress(theFile);
         App.getStage().setOnCloseRequest(null); // Save on close request no longer needed as the game is over.
@@ -409,8 +406,9 @@ public class GameEngine extends Structure {
      * As soon as a move is made the previous timer is stopped and a new one is started.
      */
     private void resetTimer() {
-        timeForMove = 0; // Reset time elapsed.
         timerExecutor.shutdown();
+        timeForMove = 0; // Reset time elapsed.
+
         timerExecutor = Executors.newSingleThreadScheduledExecutor();
         timerExecutor.scheduleWithFixedDelay(timerRunnable, 0, 1, TimeUnit.SECONDS);
     }
@@ -419,6 +417,4 @@ public class GameEngine extends Structure {
         if (isGameOver()) return this.dashboard.getScene();
         else return scene;
     }
-
-
 }

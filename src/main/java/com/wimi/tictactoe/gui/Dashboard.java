@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.wimi.tictactoe.client.game;
+package com.wimi.tictactoe.gui;
 
 import com.wimi.tictactoe.App;
 import com.wimi.tictactoe.builders.ButtonBuilder;
@@ -54,7 +54,7 @@ import java.io.IOException;
  * @Description Dashboard or a Statistics page for game progress and result.
  */
 @SuppressWarnings("unchecked")
-public class Dashboard extends Structure {
+public class Dashboard {
 
     private final BorderPane root = new BorderPane();
     private final Scene scene = new Scene(root, 1366, 768);
@@ -110,11 +110,11 @@ public class Dashboard extends Structure {
                 .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 36))
                 .build();
         Text totalTimeX = new TextBuilder("Total time taken by X: " + getTotalTime(timesOfX) + "s")
-                .setColor(Color.GREENYELLOW)
+                .setColor(Color.LIGHTBLUE)
                 .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 36))
                 .build();
         Text totalTimeO = new TextBuilder("Total time taken by O: " + getTotalTime(timesOfO) + "s")
-                .setColor(Color.BISQUE)
+                .setColor(Color.RED)
                 .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 36))
                 .build();
         Button goBack = new ButtonBuilder("Go back to Home Screen")
@@ -175,7 +175,7 @@ public class Dashboard extends Structure {
                 .build();
 
         root.setRight(chartTile);
-        NoughtsAndCrosses.createSceneBackground(root);
+        NoughtsAndCrosses.setSceneBackground(root);
     }
 
     /**
@@ -200,7 +200,8 @@ public class Dashboard extends Structure {
 
     private String getJsonGameModeHeader(JSONObject object) {
         if (object.get("mode").equals("untimed")) return "Unlimited Time";
-        else return "Timed";
+        else if (object.get("mode").equals("timed")) return "Timed";
+        else return null;
     }
 
     /**

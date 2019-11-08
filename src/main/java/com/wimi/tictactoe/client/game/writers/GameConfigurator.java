@@ -178,7 +178,7 @@ public class GameConfigurator {
         root.setTop(textWrapper);
 
         App.getStage().setOnCloseRequest(event -> exit(file));
-        NoughtsAndCrosses.createSceneBackground(root);
+        NoughtsAndCrosses.setSceneBackground(root);
     }
 
     /**

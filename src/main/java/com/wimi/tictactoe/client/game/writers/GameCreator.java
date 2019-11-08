@@ -49,12 +49,12 @@ public class GameCreator {
     }
 
     /**
-     * Check if the name of the game is valid. That is only containing only alphabets.
+     * Check if the name of the game is valid. That is only containing only alphabets or numbers.
      *
      * @param input Input string.
      * @return Is String name valid for game name.
      */
-    private boolean isStringValid(String input) {
+    public static boolean isStringValid(String input) {
         return input.matches("[a-zA-Z0-9]*");
     }
 

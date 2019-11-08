@@ -149,7 +149,7 @@ public class App extends Application {
         vBox.setPadding(new Insets(10));
         vBox.getChildren().addAll(startButton, continueGameButton, optionsGameButton, exitGameButton);
 
-        NoughtsAndCrosses.createSceneBackground(root);
+        NoughtsAndCrosses.setSceneBackground(root);
         StackPane.setAlignment(gameBanner, Pos.TOP_CENTER);
         StackPane.setMargin(gameBanner, new Insets(20, 0, 0, 0));
         root.getChildren().addAll(vBox, gameBanner);

@@ -58,7 +58,7 @@ public class SettingsConfigurator {
                 jsonObject.put("theme", Themes.DARK.toString()); // Dark Theme by default.
                 jsonObject.put("SFX", true); // SFX on by default.
                 jsonObject.put("maxTime", 5); // Max time allowed when playing on Timed mode.
-                jsonObject.put("difficulty", Levels.MEDIUM.toString()); // Difficulty when playing against computer.
+                jsonObject.put("difficulty", Levels.INTERMEDIATE.toString()); // Difficulty when playing against computer.
                 fileWriter.write(jsonObject.toJSONString());
                 fileWriter.close();
 

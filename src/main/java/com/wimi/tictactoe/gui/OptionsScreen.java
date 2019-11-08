@@ -16,6 +16,7 @@
 
 package com.wimi.tictactoe.gui;
 
+import com.jfoenix.controls.JFXSlider;
 import com.jfoenix.controls.JFXToggleButton;
 import com.wimi.tictactoe.App;
 import com.wimi.tictactoe.builders.ButtonBuilder;
@@ -29,9 +30,10 @@ import com.wimi.tictactoe.util.Themes;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Slider;
+import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -85,13 +87,14 @@ public class OptionsScreen {
 
             if (NoughtsAndCrosses.getWriter().getSFX()) AudioEngine.playGlassClickSound();
 
-            NoughtsAndCrosses.createSceneBackground(root);
-            NoughtsAndCrosses.createSceneBackground(App.getRoot());
+            NoughtsAndCrosses.setSceneBackground(root);
+            NoughtsAndCrosses.setSceneBackground(App.getRoot());
         });
 
         if (NoughtsAndCrosses.getWriter().getJsonKey("theme").equals(Themes.DARK.toString())) theme.setSelected(true);
         else if (NoughtsAndCrosses.getWriter().getJsonKey("theme").equals(Themes.LIGHT.toString()))
             theme.setSelected(false);
+
         HBox themeHBox = new HBox();
         themeHBox.setAlignment(Pos.CENTER);
         themeHBox.getChildren().addAll(themeHeader, theme);
@@ -119,6 +122,7 @@ public class OptionsScreen {
 
         if (NoughtsAndCrosses.getWriter().getSFX()) SFX.setSelected(true);
         else SFX.setSelected(false);
+
         HBox sfxHBox = new HBox(20);
         sfxHBox.setAlignment(Pos.CENTER);
         sfxHBox.getChildren().addAll(sfxHeader, SFX);
@@ -127,12 +131,14 @@ public class OptionsScreen {
                 .setFont(Font.font("Arial", FontWeight.SEMI_BOLD, 24))
                 .setColor(Color.SLATEGRAY)
                 .build();
-        Slider timeSlider = new SliderBuilder(1, 15, (long) NoughtsAndCrosses.getWriter().getJsonKey("maxTime"))
+        JFXSlider timeSlider = new SliderBuilder(1, 15, (long) NoughtsAndCrosses.getWriter().getJsonKey("maxTime"))
                 .setOrientation(Orientation.HORIZONTAL)
                 .setWidth(400)
+                .setCursor(Cursor.H_RESIZE)
+                .setShowTickLabels(true)
                 .build();
         timeSlider.setOnMouseReleased(event -> {
-            NoughtsAndCrosses.getWriter().setJsonKey("maxTime", (int) timeSlider.getValue());
+            NoughtsAndCrosses.getWriter().setJsonKey("maxTime", (int) Math.round(timeSlider.getValue()));
             Console.log("Set maxTime JSON value to " + NoughtsAndCrosses.getWriter().getJsonKey("maxTime") + " seconds.");
         });
 
@@ -140,33 +146,42 @@ public class OptionsScreen {
         maxTimeVBox.setAlignment(Pos.CENTER);
         maxTimeVBox.getChildren().addAll(timeSlider, timeHeader);
 
-        VBox difficultiesVBox = new VBox(20);
-        difficultiesVBox.getChildren().addAll(new TextBuilder("1 - Easy")
-                .setFont(Font.font("Arial", FontWeight.SEMI_BOLD, 24))
-                .setColor(Color.GREENYELLOW)
-                .build(), new TextBuilder("2 - Medium")
-                .setFont(Font.font("Arial", FontWeight.SEMI_BOLD, 24))
-                .setColor(Color.GREENYELLOW)
-                .build(), new TextBuilder("3 - Impossible")
-                .setFont(Font.font("Arial", FontWeight.SEMI_BOLD, 24))
-                .setColor(Color.GREENYELLOW)
-                .build());
-        Text difficultyHeader = new TextBuilder("Difficulty")
-                .setFont(Font.font("Arial", FontWeight.BOLD, 24))
-                .setColor(Color.SLATEGRAY)
+        Text difficultyHeader = new TextBuilder("Difficulty: ")
+                .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 24))
+                .setColor(Color.LIGHTGREY)
                 .build();
-        Slider difficultySlider = new SliderBuilder(1, 3, getDifficultyLevel())
+
+        Label difficultyLabel = new Label(NoughtsAndCrosses.getWriter().getJsonKey("difficulty").toString());
+        difficultyLabel.setFont(Font.font("Segoe UI", 24));
+
+        if (NoughtsAndCrosses.getWriter().getJsonKey("difficulty").equals(Levels.EASY.toString()))
+            difficultyLabel.setTextFill(Color.SPRINGGREEN);
+        else if (NoughtsAndCrosses.getWriter().getJsonKey("difficulty").equals(Levels.INTERMEDIATE.toString()))
+            difficultyLabel.setTextFill(Color.ORANGE);
+        else if (NoughtsAndCrosses.getWriter().getJsonKey("difficulty").equals(Levels.IMPOSSIBLE.toString()))
+            difficultyLabel.setTextFill(Color.RED);
+        else difficultyLabel.setTextFill(Color.BLACK);
+
+        HBox diffHBox = new HBox(5);
+        diffHBox.getChildren().addAll(difficultyHeader, difficultyLabel);
+        diffHBox.setAlignment(Pos.CENTER);
+
+        JFXSlider difficultySlider = new SliderBuilder(1, 3, getDifficultyLevel())
                 .setOrientation(Orientation.HORIZONTAL)
                 .setWidth(300)
+                .setCursor(Cursor.H_RESIZE)
+                .setShowTickLabels(true)
                 .build();
-        difficultySlider.setOnMouseReleased(event -> setDifficultyLevel((int) Math.round(difficultySlider.getValue())));
 
-        HBox difficultyHBox = new HBox(30);
-        difficultyHBox.getChildren().addAll(difficultyHeader, difficultySlider, difficultiesVBox);
-        difficultyHBox.setAlignment(Pos.CENTER);
+        difficultySlider.setOnMouseReleased(event -> setDifficultyLevel((int) Math.round(difficultySlider.getValue())));
+        difficultySlider.valueProperty().addListener((observable, oldValue, newValue) -> updateDiffTextLabel(Math.round(newValue.doubleValue()), difficultyLabel));
+
+        VBox difficultiesVBox = new VBox(5);
+        difficultiesVBox.getChildren().addAll(difficultySlider, diffHBox);
+        difficultiesVBox.setAlignment(Pos.CENTER);
 
         VBox rootVBox = new VBox(15);
-        rootVBox.getChildren().addAll(themeHBox, sfxHBox, maxTimeVBox, difficultyHBox);
+        rootVBox.getChildren().addAll(themeHBox, sfxHBox, maxTimeVBox, difficultiesVBox);
         rootVBox.setAlignment(Pos.CENTER);
         root.setCenter(rootVBox);
 
@@ -188,15 +203,32 @@ public class OptionsScreen {
 
         App.getStage().setHeight(App.getStage().getHeight());
         App.getStage().setWidth(App.getStage().getWidth());
-        NoughtsAndCrosses.createSceneBackground(root);
+        NoughtsAndCrosses.setSceneBackground(root);
         scene.getStylesheets().add(this.getClass().getResource("/assets/Slider.css").toExternalForm());
+    }
+
+    private void updateDiffTextLabel(double observableValue, Label label) {
+        if (observableValue == 1) {
+            label.setText("Easy");
+            label.setTextFill(Color.SPRINGGREEN);
+        } else if (observableValue == 2) {
+            label.setText("Intermediate");
+            label.setTextFill(Color.ORANGE);
+        } else if (observableValue == 3) {
+            label.setText("Impossible");
+            label.setTextFill(Color.RED);
+        } else {
+            label.setText("ERROR:" + observableValue);
+            label.setTextFill(Color.BLACK);
+        }
     }
 
     private int getDifficultyLevel() {
         if (!NoughtsAndCrosses.getWriter().containsKey("difficulty"))
             Console.log("Could not find the 'difficulty' JSON key in the settings JSON");
         else if (NoughtsAndCrosses.getWriter().getJsonKey("difficulty").equals(Levels.EASY.toString())) return 1;
-        else if (NoughtsAndCrosses.getWriter().getJsonKey("difficulty").equals(Levels.MEDIUM.toString())) return 2;
+        else if (NoughtsAndCrosses.getWriter().getJsonKey("difficulty").equals(Levels.INTERMEDIATE.toString()))
+            return 2;
         else if (NoughtsAndCrosses.getWriter().getJsonKey("difficulty").equals(Levels.IMPOSSIBLE.toString())) return 3;
 
         return 0;
@@ -208,7 +240,7 @@ public class OptionsScreen {
                 NoughtsAndCrosses.getWriter().setJsonKey("difficulty", Levels.EASY.toString());
                 break;
             case 2:
-                NoughtsAndCrosses.getWriter().setJsonKey("difficulty", Levels.MEDIUM.toString());
+                NoughtsAndCrosses.getWriter().setJsonKey("difficulty", Levels.INTERMEDIATE.toString());
                 break;
             case 3:
                 NoughtsAndCrosses.getWriter().setJsonKey("difficulty", Levels.IMPOSSIBLE.toString());

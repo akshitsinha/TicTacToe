@@ -16,6 +16,9 @@
 
 package com.wimi.tictactoe.util;
 
+/**
+ * The background theme of all the scenes in the game.
+ */
 public enum Themes {
     DARK,
     LIGHT

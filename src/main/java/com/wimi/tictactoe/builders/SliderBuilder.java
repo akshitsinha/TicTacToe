@@ -18,6 +18,7 @@ package com.wimi.tictactoe.builders;
 
 import com.jfoenix.controls.JFXSlider;
 import javafx.geometry.Orientation;
+import javafx.scene.Cursor;
 
 @SuppressWarnings("unused")
 public class SliderBuilder {
@@ -56,6 +57,22 @@ public class SliderBuilder {
      */
     public SliderBuilder setValue(double value) {
         slider.setValue(value);
+        return this;
+    }
+
+    /**
+     * Set whether to show the labels of the ticks on the slider.
+     */
+    public SliderBuilder setShowTickLabels(boolean val) {
+        slider.setShowTickLabels(val);
+        return this;
+    }
+
+    /**
+     * Select type of cursor when hovering over the slider.
+     */
+    public SliderBuilder setCursor(Cursor cursor) {
+        slider.setCursor(cursor);
         return this;
     }
 

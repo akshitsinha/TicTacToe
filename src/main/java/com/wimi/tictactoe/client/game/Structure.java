@@ -42,17 +42,16 @@ public class Structure {
                 (Objects.equals(moves[1], moves[4]) && Objects.equals(moves[4], moves[7]) && !moves[1].equals(" ")) ||
                 (Objects.equals(moves[2], moves[5]) && Objects.equals(moves[5], moves[8]) && !moves[2].equals(" ")) ||
                 (Objects.equals(moves[0], moves[4]) && Objects.equals(moves[4], moves[8]) && !moves[0].equals(" ")) ||
-                (Objects.equals(moves[2], moves[4]) && Objects.equals(moves[4], moves[6]) && !moves[2].equals(" "))
-        ) {
+                (Objects.equals(moves[2], moves[4]) && Objects.equals(moves[4], moves[6]) && !moves[2].equals(" "))) {
             Console.log("Time taken to determine game result was " + (System.nanoTime() - timeForAlgorithm) + "ns.");
             return true;
-        }
-
-        return false;
+        } else return false;
     }
 
     /**
-     * @return Total number of moves.
+     * Gets the total number of moves on a game excluding the ones not yet made.
+     *
+     * @return Total number of moves already made.
      */
     protected int getTotalMoves(Button[] buttons) {
         int moves = 0;
@@ -73,8 +72,6 @@ public class Structure {
                 return States.O;
             case O:
                 return States.X;
-            case NONE:
-                return States.NONE;
             default:
                 throw new IllegalStateException("Unexpected value: " + move);
         }
@@ -87,11 +84,8 @@ public class Structure {
      * @return State of the move.
      */
     protected States getMoveID(String string) {
-        if (string.equalsIgnoreCase(States.X.toString())) {
-            return States.X;
-        } else if (string.equalsIgnoreCase(States.O.toString())) {
-            return States.O;
-        }
+        if (string.equalsIgnoreCase(States.X.toString())) return States.X;
+        else if (string.equalsIgnoreCase(States.O.toString())) return States.O;
 
         return States.NONE;
     }
@@ -103,15 +97,14 @@ public class Structure {
      */
     protected States randomMoveGenerator() {
         Random random = new Random();
-        int randInt = random.nextInt(2);
 
-        switch (randInt) {
+        switch (random.nextInt(2)) {
             case 0:
                 return States.O;
             case 1:
                 return States.X;
             default:
-                return States.NONE;
+                return null;
         }
     }
 

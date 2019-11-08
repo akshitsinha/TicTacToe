@@ -22,6 +22,7 @@ import com.wimi.tictactoe.builders.TextBuilder;
 import com.wimi.tictactoe.client.NoughtsAndCrosses;
 import com.wimi.tictactoe.client.game.mechanics.AudioEngine;
 import com.wimi.tictactoe.client.game.mechanics.GameEngine;
+import com.wimi.tictactoe.client.game.writers.GameCreator;
 import com.wimi.tictactoe.util.Console;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
@@ -133,7 +134,7 @@ public class ContinueScreen {
         scene.getStylesheets().add(this.getClass().getResource("/assets/Background.css").toExternalForm());
         App.getStage().setHeight(App.getStage().getHeight());
         App.getStage().setWidth(App.getStage().getWidth());
-        NoughtsAndCrosses.createSceneBackground(root);
+        NoughtsAndCrosses.setSceneBackground(root);
     }
 
     private void refreshExistingGames() {
@@ -195,9 +196,9 @@ public class ContinueScreen {
      */
     private void showDeleteConfirmationPopup(File file) {
         Text commandMessage = new TextBuilder("Are you sure you want to delete " + file.getName())
-                .setLayoutX(popupScene.getWidth() / 2 - 180)
+                .setLayoutX(popupScene.getWidth() / 2 - 170)
                 .setLayoutY(popupScene.getHeight() / 2 - 50)
-                .setFont(Font.font("Arial", FontPosture.REGULAR, 18))
+                .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 24))
                 .build();
         Button confirmationButton = new ButtonBuilder("Confirm")
                 .setPrefWidth(100)
@@ -208,7 +209,7 @@ public class ContinueScreen {
                     popupStage.close();
                     refreshExistingGames();
                 })
-                .setStyle("-jfx-button-type: RAISED; -fx-background-color: gold; -fx-text-fill: green;")
+                .setStyle("-jfx-button-type: RAISED; -fx-background-color: #2cdb5b; -fx-text-fill: #50707a;")
                 .build();
         Button cancellationButton = new ButtonBuilder("Cancel")
                 .setPrefWidth(100)
@@ -216,30 +217,29 @@ public class ContinueScreen {
                 .setLayoutY(popupScene.getHeight() / 2 + 50)
                 .onMouseClick(event -> popupStage.close())
                 .setTextColor(Color.RED)
-                .setStyle("-jfx-button-type: RAISED; -fx-background-color: aqua; -fx-text-fill: red;")
+                .setStyle("-jfx-button-type: RAISED; -fx-background-color: #e35d85; -fx-text-fill: #50707a;")
                 .build();
 
         popupRoot.getChildren().add(commandMessage);
         popupRoot.getChildren().addAll(confirmationButton, cancellationButton);
-
         popupStage.show();
     }
 
     private void showRenameConfirmationPopup(File file) {
         TextField renamedTextField = new TextField();
-        renamedTextField.setLayoutX(popupScene.getWidth() / 2 - 100);
+        renamedTextField.setLayoutX(popupScene.getWidth() / 2 - 90);
         renamedTextField.setLayoutY(popupScene.getHeight() / 2 - 25);
         renamedTextField.setPrefWidth(200);
 
         Text commandMessage = new TextBuilder("What do you want to rename this file to?")
                 .setLayoutX(popupScene.getWidth() / 2 - 180)
                 .setLayoutY(popupScene.getHeight() / 2 - 50)
-                .setFont(Font.font("Arial", FontPosture.REGULAR, 18))
+                .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 24))
                 .build();
         Text notificationText = new TextBuilder("")
                 .setLayoutX(popupScene.getWidth() / 2 - 160)
                 .setLayoutY(popupScene.getHeight() / 2 + 40)
-                .setFont(Font.font("Arial", FontPosture.REGULAR, 20))
+                .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 20))
                 .setColor(Color.RED)
                 .build();
         Button confirmationButton = new ButtonBuilder("Confirm")
@@ -248,15 +248,18 @@ public class ContinueScreen {
                 .setLayoutY(popupScene.getHeight() / 2 + 50)
                 .onMouseClick(event -> {
                     if (renamedTextField.getText().isEmpty()) {
-                        notificationText.setText("Name of the game cannot be empty.");
-                        service.schedule(() -> notificationText.setText(""), 1024, TimeUnit.MILLISECONDS);
-                    } else {
+                        notificationText.setText("Name of the game cannot be empty!");
+                        service.schedule(() -> notificationText.setText(""), 1, TimeUnit.SECONDS);
+                    } else if (GameCreator.isStringValid(renamedTextField.getText())) {
                         renameGameFile(file, renamedTextField.getText());
                         refreshExistingGames();
                         popupStage.close();
+                    } else {
+                        renamedTextField.setText("Invalid game name entered!");
+                        service.schedule(() -> renamedTextField.setText(""), 1, TimeUnit.SECONDS);
                     }
                 })
-                .setStyle("-jfx-button-type: RAISED; -fx-background-color: gold; -fx-text-fill: green;")
+                .setStyle("-jfx-button-type: RAISED; -fx-background-color: #2cdb5b; -fx-text-fill: #50707a;")
                 .build();
         Button cancellationButton = new ButtonBuilder("Cancel")
                 .setPrefWidth(100)
@@ -264,12 +267,11 @@ public class ContinueScreen {
                 .setLayoutY(popupScene.getHeight() / 2 + 50)
                 .onMouseClick(event -> popupStage.close())
                 .setTextColor(Color.RED)
-                .setStyle("-jfx-button-type: RAISED; -fx-background-color: aqua; -fx-text-fill: red;")
+                .setStyle("-jfx-button-type: RAISED; -fx-background-color: #e35d85; -fx-text-fill: #50707a;")
                 .build();
 
-        popupRoot.getChildren().addAll(commandMessage, notificationText); // Texts
+        popupRoot.getChildren().addAll(commandMessage, notificationText); // Text fields.
         popupRoot.getChildren().addAll(confirmationButton, cancellationButton, renamedTextField); // Buttons and other necessary text fields.
-
         popupStage.show();
     }
 
@@ -302,8 +304,7 @@ public class ContinueScreen {
         if (file.exists() && !renamedFile.exists()) {
             Console.log("Renaming " + file.getName());
             boolean rename = file.renameTo(renamedFile);
-            if (rename)
-                Console.log("File renamed to " + renamedFileName);
+            if (rename) Console.log("File renamed to " + renamedFileName);
         } else if (!file.exists())
             Console.log("No such game file exists with the given name");
         else if (renamedFile.exists())

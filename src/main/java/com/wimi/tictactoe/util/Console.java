@@ -19,14 +19,14 @@ package com.wimi.tictactoe.util;
 import java.time.Instant;
 
 /**
- * @Description Logging messages to console output.
+ * @Description Logs to console output.
  */
 public class Console {
 
     /**
      * Logs a message to the Console.
      *
-     * @param log Message.
+     * @param log The log message.
      */
     public static void log(Object log) {
         System.out.println("[" + Instant.now() + "] " + log);

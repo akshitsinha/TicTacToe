@@ -121,7 +121,7 @@ public class CreationScreen {
         textWrapper.setPadding(new Insets(50, 0, 0, 0));
         root.setTop(textWrapper);
 
-        NoughtsAndCrosses.createSceneBackground(root);
+        NoughtsAndCrosses.setSceneBackground(root);
         App.getStage().setHeight(App.getStage().getHeight());
         App.getStage().setWidth(App.getStage().getWidth());
     }
