@@ -21,6 +21,7 @@ import com.wimi.tictactoe.util.Levels;
 import com.wimi.tictactoe.util.Themes;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.io.File;
 import java.io.FileReader;
@@ -45,7 +46,7 @@ public class SettingsConfigurator {
             try (FileReader reader = new FileReader(optionsAssets)) {
                 Console.log("Getting the already written JSON elements.");
                 jsonObject = (JSONObject) jsonParser.parse(reader);
-            } catch (Exception e) {
+            } catch (IOException | ParseException e) {
                 e.printStackTrace();
             }
         } else {
@@ -66,7 +67,7 @@ public class SettingsConfigurator {
                 jsonObject = (JSONObject) jsonParser.parse(reader);
                 reader.close();
                 Console.log("Written default JSON values on file. Options JSON. Thru " + this.getClass().getSimpleName());
-            } catch (Exception e) {
+            } catch (IOException | ParseException e) {
                 e.printStackTrace();
             }
         }
@@ -84,7 +85,7 @@ public class SettingsConfigurator {
     public Object getJsonKey(Object key) {
         try (FileReader reader = new FileReader(optionsAssets)) {
             jsonObject = (JSONObject) jsonParser.parse(reader);
-        } catch (Exception e) {
+        } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
 
@@ -99,7 +100,7 @@ public class SettingsConfigurator {
     public boolean containsKey(Object key) {
         try (FileReader reader = new FileReader(optionsAssets)) {
             jsonObject = (JSONObject) jsonParser.parse(reader);
-        } catch (Exception e) {
+        } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
 
@@ -107,12 +108,27 @@ public class SettingsConfigurator {
     }
 
     /**
-     * @return If SFX is turned on.
+     * @return The preferred theme by the user.
+     */
+    public Themes getTheme() {
+        try (FileReader reader = new FileReader(optionsAssets)) {
+            jsonObject = (JSONObject) jsonParser.parse(reader);
+            if (jsonObject.get("theme").equals(Themes.DARK.toString())) return Themes.DARK;
+            else if (jsonObject.get("theme").equals(Themes.LIGHT.toString())) return Themes.LIGHT;
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    /**
+     * @return Is SFX is turned on.
      */
     public boolean getSFX() {
         try (FileReader reader = new FileReader(optionsAssets)) {
             jsonObject = (JSONObject) jsonParser.parse(reader);
-        } catch (Exception e) {
+        } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
 

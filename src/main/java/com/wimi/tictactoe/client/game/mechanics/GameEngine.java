@@ -275,10 +275,7 @@ public class GameEngine extends Structure {
      */
     private JSONArray getGameProgress() {
         JSONArray array = new JSONArray();
-        for (int i = 0; i < 9; i++) {
-            array.add(gameNodes[i].getText());
-        }
-
+        for (int i = 0; i < 9; i++) array.add(gameNodes[i].getText());
         return array;
     }
 
@@ -331,6 +328,7 @@ public class GameEngine extends Structure {
                     .setPrefHeight(100)
                     .setPrefWidth(100)
                     .setStyle("-jfx-button-type: RAISED; -fx-background-color: gold; -fx-text-fill: blue;")
+                    .setID(String.valueOf(i))
                     .onMouseClick(event -> {
                         gameNodes[finalI].setText(move.toString());
                         gameNodes[finalI].setDisable(true);
@@ -365,19 +363,13 @@ public class GameEngine extends Structure {
                     .build();
         }
 
-        int x = 0;
-        for (int i = 0; i < 9; i++) {
-            gameGrid.addColumn(x, gameNodes[i]);
-            x++;
-            if (x == 3) x = 0;
-        }
+        for (int i = 0; i < 9; i++) gameGrid.addColumn(i % 3, gameNodes[i]);
+        if (NoughtsAndCrosses.getWriter().getTheme().equals(Themes.DARK)) gameGrid.setGridLinesVisible(true);
 
         gameGrid.setVgap(30);
         gameGrid.setHgap(30);
         gameGrid.setPadding(new Insets(10));
         gameGrid.setAlignment(Pos.CENTER);
-        if (NoughtsAndCrosses.getWriter().getJsonKey("theme").equals(Themes.DARK.toString()))
-            gameGrid.setGridLinesVisible(true);
     }
 
     /**

@@ -20,6 +20,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 
 @SuppressWarnings("unused")
 public class ImageBuilder {
@@ -33,7 +34,7 @@ public class ImageBuilder {
     public ImageBuilder(String path) {
         try (FileInputStream inputStream = new FileInputStream(path)) {
             this.image = new Image(inputStream);
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 

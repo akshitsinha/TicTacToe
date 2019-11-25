@@ -29,25 +29,6 @@ public class GameCreator {
     private final String gameAssetsPath = System.getenv("TEMP") + "//.tictactoe//saves//";
     private final File defaultPath = new File(gameAssetsPath);
 
-    public void createGameAssets(String gameName) {
-        File gameAssetPath = new File(gameAssetsPath + gameName + ".nc");
-        // File Extension stands for Noughts and Crosses (.nc)
-
-        if (isStringValid(gameName)) {
-            try {
-                boolean creation = gameAssetPath.createNewFile();
-
-                if (creation) Console.log("File created successfully with the name " + gameName);
-                else {
-                    Console.log("Could not create file.");
-                    debugAssetPath();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else Console.log("Illegal file name entered. Only alphabets and numbers are allowed.");
-    }
-
     /**
      * Check if the name of the game is valid. That is only containing only alphabets or numbers.
      *
@@ -58,16 +39,37 @@ public class GameCreator {
         return input.matches("[a-zA-Z0-9]*");
     }
 
+    public void createGameAssets(String gameName) {
+        File GAME_FILE = new File(gameAssetsPath + gameName + ".nc");
+        // File Extension stands for Noughts and Crosses (.nc)
+
+        if (isStringValid(gameName)) {
+            try {
+                if (GAME_FILE.createNewFile()) Console.log("File created successfully with the name " + gameName);
+                else {
+                    Console.log("Could not create file.");
+                    if (debugAssetPath() && GAME_FILE.createNewFile()) Console.log("File created: " + gameName);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else Console.log("Illegal file name entered. Only alphabets and numbers are allowed.");
+    }
+
     /**
      * Runs when game fails to find the path of the saves directory.
+     *
+     * @return True if the missing directory is created successfully.
      */
-    private void debugAssetPath() {
+    private boolean debugAssetPath() {
         if (!defaultPath.isDirectory()) {
             Console.log("The default game saves directory does not exist. Trying to create one.");
-            boolean dir = defaultPath.mkdirs();
-
-            if (dir) Console.log("Created game directory. Try again?");
-            else Console.log("Still could not create the game saves directory.");
+            if (defaultPath.mkdirs()) {
+                Console.log("Created game directory. Try again?");
+                return true;
+            } else Console.log("Still could not create the game saves directory.");
         }
+
+        return false;
     }
 }

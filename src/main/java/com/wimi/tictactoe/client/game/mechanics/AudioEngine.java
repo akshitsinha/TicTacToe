@@ -16,10 +16,9 @@
 
 package com.wimi.tictactoe.client.game.mechanics;
 
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
+import javax.sound.sampled.*;
 import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -40,7 +39,7 @@ public class AudioEngine {
                 multimediaAudioStream.close();
                 bufferedMultimediaStream.close();
                 inputStream.close();
-            } catch (Exception e) {
+            } catch (LineUnavailableException | IOException | UnsupportedAudioFileException e) {
                 e.printStackTrace();
             }
         }).start();
@@ -59,7 +58,7 @@ public class AudioEngine {
                 multimediaAudioStream.close();
                 bufferedMultimediaStream.close();
                 inputStream.close();
-            } catch (Exception e) {
+            } catch (LineUnavailableException | IOException | UnsupportedAudioFileException e) {
                 e.printStackTrace();
             }
         }).start();

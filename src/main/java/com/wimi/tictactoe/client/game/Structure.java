@@ -18,9 +18,9 @@ package com.wimi.tictactoe.client.game;
 
 import com.wimi.tictactoe.util.Console;
 import javafx.scene.control.Button;
+import org.json.simple.JSONArray;
 
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 
 /**
  * @Description Contains the basic methods used for running a tic tac toe game.
@@ -29,11 +29,13 @@ public class Structure {
 
     /**
      * Checks if there is a win in the game.
+     *
+     * @param nodes Game Matrix to check for a win.
      */
     protected boolean checkForWin(Button[] nodes) {
         String[] moves = new String[nodes.length];
         for (int i = 0; i < moves.length; i++) moves[i] = nodes[i].getText();
-        long timeForAlgorithm = System.nanoTime();
+        long initialTime = System.nanoTime();
 
         if ((Objects.equals(moves[0], moves[1]) && Objects.equals(moves[1], moves[2]) && !moves[0].equals(" ")) ||
                 (Objects.equals(moves[3], moves[4]) && Objects.equals(moves[4], moves[5]) && !moves[3].equals(" ")) ||
@@ -43,7 +45,48 @@ public class Structure {
                 (Objects.equals(moves[2], moves[5]) && Objects.equals(moves[5], moves[8]) && !moves[2].equals(" ")) ||
                 (Objects.equals(moves[0], moves[4]) && Objects.equals(moves[4], moves[8]) && !moves[0].equals(" ")) ||
                 (Objects.equals(moves[2], moves[4]) && Objects.equals(moves[4], moves[6]) && !moves[2].equals(" "))) {
-            Console.log("Time taken to determine game result was " + (System.nanoTime() - timeForAlgorithm) + "ns.");
+            Console.log("Time taken to determine game result was " + (System.nanoTime() - initialTime) + "ns.");
+            return true;
+        } else return false;
+    }
+
+    /**
+     * Checks if there is a win in the game.
+     *
+     * @param array          JSON Array with game nodes to check for a win.
+     * @param winningMoveIDs Integer array with cell IDs which caused a win.
+     */
+    protected boolean checkForWin(JSONArray array, int[] winningMoveIDs) {
+        String[] moves = new String[array.size()];
+        for (int i = 0; i < moves.length; i++) moves[i] = array.get(i).toString();
+
+        for (int i = 0; i < 9; i += 3) { // Check in rows
+            if (equals(moves[i], moves[i + 1], moves[i + 2]) && !moves[i].equals(" ")) {
+                winningMoveIDs[0] = i;
+                winningMoveIDs[1] = i + 1;
+                winningMoveIDs[2] = i + 2;
+                return true;
+            }
+        }
+
+        for (int i = 0; i < 3; i++) { // Check in columns
+            if (equals(moves[i], moves[i + 3], moves[i + 6]) && !moves[i].equals(" ")) {
+                winningMoveIDs[0] = i;
+                winningMoveIDs[1] = i + 3;
+                winningMoveIDs[2] = i + 6;
+                return true;
+            }
+        }
+
+        if (equals(moves[0], moves[4], moves[8]) && !moves[0].equals(" ")) { // Check Diagonal
+            winningMoveIDs[0] = 0;
+            winningMoveIDs[1] = 4;
+            winningMoveIDs[2] = 8;
+            return true;
+        } else if (equals(moves[2], moves[4], moves[6]) && !moves[2].equals(" ")) { // Check Anti-Diagonal
+            winningMoveIDs[0] = 2;
+            winningMoveIDs[1] = 4;
+            winningMoveIDs[2] = 6;
             return true;
         } else return false;
     }
@@ -78,6 +121,23 @@ public class Structure {
     }
 
     /**
+     * Returns the modern name of a move.
+     *
+     * @param state The move to get the name of.
+     * @return Urban name of the move.
+     */
+    protected String nameOfMove(Object state) {
+        switch (state.toString()) {
+            case "X":
+                return "Cross       X";
+            case "O":
+                return "Nought      O";
+            default:
+                return "NA";
+        }
+    }
+
+    /**
      * Returns the State of the move from a string.
      *
      * @param string String text to be converted to a move state.
@@ -106,6 +166,16 @@ public class Structure {
             default:
                 return null;
         }
+    }
+
+    /**
+     * Checks indefinite object parameters when equal.
+     *
+     * @param objects Object Arguments to check for equality on.
+     */
+    private boolean equals(Object... objects) {
+        Set<Object> set = new HashSet<>(Arrays.asList(objects));
+        return set.size() == 1;
     }
 
     /**

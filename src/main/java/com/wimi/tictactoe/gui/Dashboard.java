@@ -20,18 +20,19 @@ import com.wimi.tictactoe.App;
 import com.wimi.tictactoe.builders.ButtonBuilder;
 import com.wimi.tictactoe.builders.TextBuilder;
 import com.wimi.tictactoe.client.NoughtsAndCrosses;
+import com.wimi.tictactoe.client.game.Structure;
 import com.wimi.tictactoe.client.game.mechanics.AudioEngine;
 import com.wimi.tictactoe.util.Console;
 import eu.hansolo.tilesfx.Tile;
 import eu.hansolo.tilesfx.TileBuilder;
 import eu.hansolo.tilesfx.chart.TilesFXSeries;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
-import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.CycleMethod;
@@ -54,16 +55,19 @@ import java.io.IOException;
  * @Description Dashboard or a Statistics page for game progress and result.
  */
 @SuppressWarnings("unchecked")
-public class Dashboard {
+public class Dashboard extends Structure {
 
-    private final BorderPane root = new BorderPane();
+    private final TilePane root = new TilePane();
     private final Scene scene = new Scene(root, 1366, 768);
 
     public Dashboard(File file) {
         JSONObject jsonObject = new JSONObject();
+        JSONArray jsonArray = new JSONArray();
+
         try (FileReader reader = new FileReader(file)) {
             jsonObject = (JSONObject) new JSONParser().parse(reader);
-            printNodes((JSONArray) jsonObject.get("nodes"));
+            jsonArray = (JSONArray) jsonObject.get("nodes");
+            Console.log("Game status: " + jsonObject.get("nodes"));
         } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
@@ -72,55 +76,50 @@ public class Dashboard {
         JSONArray timesOfO = new JSONArray();
         if (jsonObject.containsKey("timeX") && jsonObject.containsKey("timeO")) {
             timesOfX = (JSONArray) jsonObject.get("timeX");
-            Console.log("Times of each move made by X is " + timesOfX);
+            Console.log("Time taken by each move made by X is " + timesOfX);
 
             timesOfO = (JSONArray) jsonObject.get("timeO");
-            Console.log("Times of each move made by O is " + timesOfO);
-        } else Console.log("Times of each move are missing.");
+            Console.log("Time taken by each move made by O is " + timesOfO);
+        } else Console.log("Time taken by each move is missing.");
 
-        Text urbanName = new TextBuilder(getJsonWinnerHeader(jsonObject))
-                .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 36))
-                .setColor(Color.rgb(167, 138, 167))
-                .build(); // Urban name as in Nought or Cross.
-        Text moveName = new TextBuilder(jsonObject.get("winner").toString())
-                .setFont(Font.font("Segoe UI", FontWeight.BOLD, 36))
-                .setColor(Color.rgb(167, 138, 167))
-                .build(); // Actual move name like O and X.
-
-        HBox winner = new HBox(20);
-        winner.setAlignment(Pos.TOP_CENTER);
-        winner.setPadding(new Insets(20, 0, 0, 0));
-        winner.getChildren().addAll(urbanName, moveName);
-
-        Text dashboardBanner = new TextBuilder("Dashboard")
-                .setColor(Color.LAVENDER)
-                .setCssScript("-fx-underline: true;")
-                .setFont(Font.font("Segoe UI", FontWeight.BOLD, 44))
+        Text winnerBanner = new TextBuilder("Winner is ")
+                .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 108))
+                .setColor(Color.SEASHELL)
                 .build();
-        Text elapsedTimeBanner = new TextBuilder("Total elapsed time: " + String.format("%02d:%02d:%02d", (long) jsonObject.get("ElapsedTime") / 3600, ((long) jsonObject.get("ElapsedTime") % 3600) / 60, (long) jsonObject.get("ElapsedTime") % 60))
-                .setColor(Color.LIGHTSLATEGRAY)
-                .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 36))
+        Text winnerText = new TextBuilder(getJsonWinnerHeader(jsonObject))
+                .setFont(Font.font("Segoe UI", FontPosture.ITALIC, 90))
+                .setColor(Color.KHAKI)
+                .build();
+
+        VBox winnerVBox = new VBox();
+        winnerVBox.setPadding(new Insets(0, 0, 20, 60));
+        winnerVBox.getChildren().addAll(winnerBanner, winnerText);
+
+        Text elapsedTimeBanner = new TextBuilder("Total time played: " + String.format("%02d:%02d:%02d", (long) jsonObject.get("ElapsedTime") / 3600, ((long) jsonObject.get("ElapsedTime") % 3600) / 60, (long) jsonObject.get("ElapsedTime") % 60))
+                .setColor(Color.BURLYWOOD)
+                .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 30))
                 .build();
         Text opponentBanner = new TextBuilder("Opponent: " + jsonObject.get("opponent").toString().substring(0, 1).toUpperCase() + jsonObject.get("opponent").toString().substring(1))
                 .setColor(Color.GREENYELLOW)
-                .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 36))
+                .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 30))
                 .build();
         Text gameModeBanner = new TextBuilder("Game mode: " + getJsonGameModeHeader(jsonObject))
                 .setColor(Color.GREENYELLOW)
-                .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 36))
+                .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 30))
                 .build();
         Text totalTimeX = new TextBuilder("Total time taken by X: " + getTotalTime(timesOfX) + "s")
                 .setColor(Color.LIGHTBLUE)
-                .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 36))
+                .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 30))
                 .build();
         Text totalTimeO = new TextBuilder("Total time taken by O: " + getTotalTime(timesOfO) + "s")
                 .setColor(Color.RED)
-                .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 36))
+                .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 30))
                 .build();
-        Button goBack = new ButtonBuilder("Go back to Home Screen")
-                .setPrefHeight(40)
+        Button goBackButton = new ButtonBuilder("Go back to Home Screen")
+                .setPrefHeight(250)
                 .setPrefWidth(250)
-                .setStyle("-jfx-button-type: RAISED; -fx-background-color: #5b455e; -fx-text-fill: #eabead;")
+                .setStyle("-jfx-button-type: RAISED; -fx-background-color: #32879c; -fx-text-fill: #eabead;")
+                .setFont(Font.font("Arial", FontPosture.REGULAR, 18))
                 .onMouseClick(event -> {
                     Console.log("User goes back to Home screen. Thru " + this.getClass().getSimpleName());
                     App.getStage().setScene(App.getScene());
@@ -131,31 +130,30 @@ public class Dashboard {
                 })
                 .build();
 
-        VBox vBox = new VBox(25);
-        vBox.getChildren().addAll(dashboardBanner, winner, elapsedTimeBanner, opponentBanner, gameModeBanner, totalTimeX, totalTimeO, goBack);
-        vBox.setAlignment(Pos.CENTER);
-        vBox.setPadding(new Insets(10));
-        root.setLeft(vBox);
+        VBox statsVBox = new VBox(10);
+        statsVBox.getChildren().addAll(elapsedTimeBanner, opponentBanner, gameModeBanner, totalTimeX, totalTimeO);
+
+        HBox hBox = new HBox(10);
+        hBox.setPadding(new Insets(0, 0, 0, 25));
+        hBox.getChildren().addAll(statsVBox, goBackButton);
 
         XYChart.Series<String, Number> seriesX = new XYChart.Series<>();
         XYChart.Series<String, Number> seriesO = new XYChart.Series<>();
         seriesX.setName("Times of X");
         seriesO.setName("Times of O");
 
-        for (int i = 0; i < timesOfX.size(); i++) {
-            seriesX.getData().add(new XYChart.Data<>("M" + (i + 1), (long) timesOfX.get(i)));
-        }
+        for (int i = 0; i < timesOfX.size(); i++)
+            seriesX.getData().add(new XYChart.Data<>("Move" + (i + 1), (long) timesOfX.get(i)));
 
-        for (int i = 0; i < timesOfO.size(); i++) {
-            seriesO.getData().add(new XYChart.Data<>("M" + (i + 1), (long) timesOfO.get(i)));
-        }
+        for (int i = 0; i < timesOfO.size(); i++)
+            seriesO.getData().add(new XYChart.Data<>("Move" + (i + 1), (long) timesOfO.get(i)));
 
         Tile chartTile = TileBuilder.create()
                 .skinType(Tile.SkinType.SMOOTHED_CHART)
                 .title("Time taken by each player on each move")
-                .chartType(Tile.ChartType.AREA)
+                .chartType(Tile.ChartType.LINE)
                 .smoothing(true)
-                .borderColor(Color.RED)
+                .borderColor(Color.PALEVIOLETRED)
                 .tooltipTimeout(500)
                 .tilesFxSeries(
                         new TilesFXSeries<>(seriesX, Tile.BLUE,
@@ -169,33 +167,41 @@ public class Dashboard {
                                         new Stop(0, Tile.LIGHT_RED),
                                         new Stop(1, Color.TRANSPARENT)))
                 )
-                .minSize(scene.getWidth() - 480, scene.getHeight())
-                .maxSize(scene.getWidth() - 480, scene.getHeight())
+                .minSize(scene.getWidth() / 2, 500)
+                .maxSize(scene.getWidth() / 2, 500)
                 .padding(new Insets(10))
                 .build();
 
-        root.setRight(chartTile);
+        GridPane gridPane = new GridPane();
+        gridPane.setPadding(new Insets(30, 0, 0, 120));
+        gridPane.setHgap(15);
+        gridPane.setVgap(15);
+
+        for (int i = 0; i < 9; i++) {
+            gridPane.addColumn(i % 3, new ButtonBuilder(jsonArray.get(i).toString())
+                    .setFont(Font.font("Arial", FontWeight.BOLD, 24))
+                    .setSize(120, 120)
+                    .setDisabled(true)
+                    .setStyle("-jfx-button-type: RAISED; -fx-background-color: gold; -fx-text-fill: blue;")
+                    .build());
+        }
+
+        if (!jsonObject.get("winner").equals("NONE")) {
+            int[] winningCells = new int[3];
+            if (checkForWin(jsonArray, winningCells))
+                for (int i = 0; i < 3; i++) gridPane.getChildren().get(winningCells[i]).setOpacity(1);
+        }
+
+        root.setPrefRows(2);
+        root.setPrefColumns(2);
+        root.getChildren().addAll(gridPane, chartTile);
+        root.getChildren().addAll(winnerVBox, hBox);
         NoughtsAndCrosses.setSceneBackground(root);
     }
 
-    /**
-     * Outputs the game nodes.
-     *
-     * @param jsonArray Array to get the nodes from.
-     */
-    private void printNodes(JSONArray jsonArray) {
-        Console.log("Outputting the game nodes: ");
-        for (int i = 0; i < 9; i++) {
-            if (i % 3 == 0 && i != 0) System.out.println();
-            System.out.print(jsonArray.get(i) + " ");
-        }
-
-        System.out.println();
-    }
-
     private String getJsonWinnerHeader(JSONObject object) {
-        if (nameOfMove(object.get("winner")).equals("NA")) return "Game is Draw!";
-        else return ("Winner is " + nameOfMove(object.get("winner")) + ":");
+        if (nameOfMove(object.get("winner")).equals("NA")) return "None! Draw!";
+        else return (nameOfMove(object.get("winner")));
     }
 
     private String getJsonGameModeHeader(JSONObject object) {
@@ -205,33 +211,14 @@ public class Dashboard {
     }
 
     /**
-     * Returns the modern name of a move.
-     *
-     * @param state The move to get the name of.
-     * @return Urban name of the move.
-     */
-    private String nameOfMove(Object state) {
-        switch (state.toString()) {
-            case "X":
-                return "Cross";
-            case "O":
-                return "Nought";
-            default:
-                return "NA";
-        }
-    }
-
-    /**
      * Returns the total time taken by a move.
      *
      * @param array The JSON Array to take the elements from.
-     * @return Total time.
+     * @return Total time taken.
      */
     private long getTotalTime(JSONArray array) {
         long totalTime = 0;
-        for (Object o : array) {
-            totalTime += Long.parseLong(o.toString());
-        }
+        for (Object o : array) totalTime += Long.parseLong(o.toString());
 
         return totalTime;
     }

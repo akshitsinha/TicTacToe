@@ -50,9 +50,9 @@ public class ButtonBuilder {
     }
 
     /**
-     * Sets the translate X of the button
+     * Sets the Translate X of the button.
      *
-     * @param x New value to set
+     * @param x New value to set.
      */
     public ButtonBuilder setLayoutX(double x) {
         button.setLayoutX(x);
@@ -60,9 +60,9 @@ public class ButtonBuilder {
     }
 
     /**
-     * Sets the translate Y of the button
+     * Sets the Translate Y of the button.
      *
-     * @param y New value to set
+     * @param y New value to set.
      */
     public ButtonBuilder setLayoutY(double y) {
         button.setLayoutY(y);
@@ -70,19 +70,22 @@ public class ButtonBuilder {
     }
 
     /**
-     * Sets the final width of the button
+     * Set the size of the button.
      *
-     * @param width New value to set
+     * @param width  Width of the button.
+     * @param height Height of the button.
      */
-    public ButtonBuilder setPrefWidth(double width) {
-        button.setPrefWidth(width);
+    public ButtonBuilder setSize(double width, double height) {
+        button.setMinSize(width, height);
+        button.setPrefSize(width, height);
+        button.setMaxSize(width, height);
         return this;
     }
 
     /**
-     * Sets the final height of the button
+     * Sets the preferred height of the button.
      *
-     * @param height New value to set
+     * @param height New value to set.
      */
     public ButtonBuilder setPrefHeight(double height) {
         button.setPrefHeight(height);
@@ -90,9 +93,29 @@ public class ButtonBuilder {
     }
 
     /**
+     * Sets the preferred width of the button.
+     *
+     * @param width New value to set.
+     */
+    public ButtonBuilder setPrefWidth(double width) {
+        button.setPrefWidth(width);
+        return this;
+    }
+
+    /**
+     * Sets an ID of the button mainly for debugging purposes.
+     *
+     * @param id Identification String for the button.
+     */
+    public ButtonBuilder setID(String id) {
+        button.setId(id);
+        return this;
+    }
+
+    /**
      * Sets the context menu for a node.
      *
-     * @param contextMenu The context menu which can be accessed on right clicking the node.
+     * @param contextMenu The context menu which can be accessed when right clicking the node.
      */
     public ButtonBuilder setContextMenu(ContextMenu contextMenu) {
         button.setContextMenu(contextMenu);
@@ -112,9 +135,9 @@ public class ButtonBuilder {
     }
 
     /**
-     * Sets the color of the text inside the button
+     * Sets the color of the text on the button
      *
-     * @param color New value to set
+     * @param color New color value to set.
      */
     public ButtonBuilder setTextColor(Color color) {
         button.setTextFill(color);
@@ -122,9 +145,9 @@ public class ButtonBuilder {
     }
 
     /**
-     * Sets the font of the test inside the button
+     * Sets the font of the text on the button.
      *
-     * @param font New value to set
+     * @param font New font value to set.
      */
     public ButtonBuilder setFont(Font font) {
         button.setFont(font);
@@ -142,9 +165,7 @@ public class ButtonBuilder {
     }
 
     /**
-     * Sets the action done when the button is clicked
-     *
-     * @param value New value to set
+     * Sets the action to be done when the button is clicked.
      */
     public ButtonBuilder onMouseClick(EventHandler<? super MouseEvent> value) {
         button.setOnMouseClicked(value);
@@ -152,9 +173,7 @@ public class ButtonBuilder {
     }
 
     /**
-     * Builds the button
-     *
-     * @return The built button.
+     * Builds the button.
      */
     public Button build() {
         return button;
