@@ -107,11 +107,11 @@ public class Dashboard extends Structure {
                 .setColor(Color.GREENYELLOW)
                 .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 30))
                 .build();
-        Text totalTimeX = new TextBuilder("Total time taken by X: " + getTotalTime(timesOfX) + "s")
+        Text totalTimeX = new TextBuilder("Total time taken by X: " + getTotalTime(timesOfX))
                 .setColor(Color.LIGHTBLUE)
                 .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 30))
                 .build();
-        Text totalTimeO = new TextBuilder("Total time taken by O: " + getTotalTime(timesOfO) + "s")
+        Text totalTimeO = new TextBuilder("Total time taken by O: " + getTotalTime(timesOfO))
                 .setColor(Color.RED)
                 .setFont(Font.font("Segoe UI", FontPosture.REGULAR, 30))
                 .build();
@@ -143,10 +143,10 @@ public class Dashboard extends Structure {
         seriesO.setName("Times of O");
 
         for (int i = 0; i < timesOfX.size(); i++)
-            seriesX.getData().add(new XYChart.Data<>("Move" + (i + 1), (long) timesOfX.get(i)));
+            seriesX.getData().add(new XYChart.Data<>("Move" + (i + 1), (double) timesOfX.get(i)));
 
         for (int i = 0; i < timesOfO.size(); i++)
-            seriesO.getData().add(new XYChart.Data<>("Move" + (i + 1), (long) timesOfO.get(i)));
+            seriesO.getData().add(new XYChart.Data<>("Move" + (i + 1), (double) timesOfO.get(i)));
 
         Tile chartTile = TileBuilder.create()
                 .skinType(Tile.SkinType.SMOOTHED_CHART)
@@ -216,11 +216,14 @@ public class Dashboard extends Structure {
      * @param array The JSON Array to take the elements from.
      * @return Total time taken.
      */
-    private long getTotalTime(JSONArray array) {
-        long totalTime = 0;
-        for (Object o : array) totalTime += Long.parseLong(o.toString());
+    private String getTotalTime(JSONArray array) {
+        double totalTime = 0; // In seconds upto one decimal place.
+        for (Object o : array) totalTime += Double.parseDouble(o.toString());
+        totalTime = round(totalTime);
 
-        return totalTime;
+        if (totalTime < 60) return Math.round(totalTime) + "s";
+        else if (totalTime <= 3600) return round(totalTime / 60) + "m";
+        else return "Too big!";
     }
 
     public Scene getScene() {

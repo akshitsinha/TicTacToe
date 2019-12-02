@@ -80,9 +80,9 @@ public class GameEngine extends Structure {
     private JSONArray jsonArrayO = new JSONArray(); // Contains the time taken for each move by O.
     private boolean finished = false; // Is the game finished or not.
     private boolean timed = false; // Is the game in Timed mode or not.
-    private long timePlayed = 0; // Time played since game start.
-    private long timeForMove = 0; // Time taken to do each move is temporarily saved to this variable.
+    private double timeForMove = 0; // Time taken to do each move is temporarily saved to this variable.
     private long maxTimeAllowed = 0; // Max time allowed when the game is in timed mode.
+    private long timePlayed = 0; // Time played since game start.
     private int movesX = 0; // Total moves made of X
     private int movesO = 0; // Total moves made of O
     private States move = States.NONE; // The current move.
@@ -91,8 +91,10 @@ public class GameEngine extends Structure {
         if (finished) timerExecutor.shutdown();
         else {
             if (timed && getTotalMoves(gameNodes) > 0) {
-                timeLeft.setText(String.valueOf(maxTimeAllowed - timeForMove));
+                timeLeft.setText(String.valueOf(round(maxTimeAllowed - timeForMove)));
                 if (timeForMove >= maxTimeAllowed) {
+                    timeLeft.setText("Switching scenes..");
+                    disableButtons(gameNodes);
                     winner = getConjugateMove(move); // The other player is the winner as the opponent couldn't make a move in time.
                     Platform.runLater(this::win); // Run on JavaFX thread.
                     Console.log("Time is up for " + move + " to make a move. Hence " + getConjugateMove(move).toString() + " is the winner.");
@@ -100,7 +102,7 @@ public class GameEngine extends Structure {
                 }
             }
 
-            timeForMove++; // Increment time taken for current move.
+            timeForMove += 0.1; // Increment time taken for current move.
         }
     };
 
@@ -137,7 +139,7 @@ public class GameEngine extends Structure {
                 setupMatrix();
                 setGameProgress((JSONArray) jsonObject.get("nodes"));
 
-                timeForMove = (long) jsonObject.get("LastMoveTime");
+                timeForMove = (double) jsonObject.get("LastMoveTime");
                 Console.log("Last move already took " + timeForMove + " seconds.");
 
                 timed = jsonObject.get("mode").equals("timed");
@@ -152,7 +154,7 @@ public class GameEngine extends Structure {
                     finished = true;
                 } else if (getTotalMoves(gameNodes) > 0) {
                     elapsedExecutor.scheduleWithFixedDelay(elapsedRunnable, 0, 1, TimeUnit.SECONDS);
-                    timerExecutor.scheduleWithFixedDelay(timerRunnable, 0, 1, TimeUnit.SECONDS);
+                    timerExecutor.scheduleWithFixedDelay(timerRunnable, 0, 100, TimeUnit.MILLISECONDS);
                 }
 
                 Console.log("The opponent is " + jsonObject.get("opponent").toString());
@@ -192,7 +194,7 @@ public class GameEngine extends Structure {
                 // Opponent log here
 
                 elapsedExecutor.scheduleWithFixedDelay(elapsedRunnable, 1, 1, TimeUnit.SECONDS);
-                timerExecutor.scheduleWithFixedDelay(timerRunnable, 0, 1, TimeUnit.SECONDS);
+                timerExecutor.scheduleWithFixedDelay(timerRunnable, 0, 100, TimeUnit.MILLISECONDS);
             } else Console.log("Files necessary to start a game are missing.");
         } catch (ParseException | IOException e) {
             e.printStackTrace();
@@ -236,7 +238,7 @@ public class GameEngine extends Structure {
         graphicsEngine.setRoot(root);
         NoughtsAndCrosses.setSceneBackground(root);
 
-        if (!isGameOver())
+        if (!finished)
             App.getStage().setOnCloseRequest(event -> {
                 if (getTotalMoves(gameNodes) > 0) saveCurrentProgress(file);
                 else if (file.delete()) Console.log("Deleted game file as no moves were made.");
@@ -335,15 +337,15 @@ public class GameEngine extends Structure {
 
                         switch (move) {
                             case X:
-                                Console.log("Time taken for X's move " + (movesX + 1) + " was " + timeForMove + "s");
+                                Console.log("Time taken for X's move " + (movesX + 1) + " was " + round(timeForMove) + "s");
                                 movesX++;
-                                jsonArrayX.add(timeForMove);
+                                jsonArrayX.add(round(timeForMove));
                                 move = States.O;
                                 break;
                             case O:
-                                Console.log("Time taken for O's move " + (movesO + 1) + " was " + timeForMove + "s");
+                                Console.log("Time taken for O's move " + (movesO + 1) + " was " + round(timeForMove) + "s");
                                 movesO++;
-                                jsonArrayO.add(timeForMove);
+                                jsonArrayO.add(round(timeForMove));
                                 move = States.X;
                                 break;
                             default:
@@ -387,10 +389,10 @@ public class GameEngine extends Structure {
     }
 
     /**
-     * @return Is game over
+     * Disables all buttons.
      */
-    private boolean isGameOver() {
-        return finished;
+    private void disableButtons(Button[] buttons) {
+        for (Button button : buttons) button.setDisable(true);
     }
 
     /**
@@ -399,14 +401,14 @@ public class GameEngine extends Structure {
      */
     private void resetTimer() {
         timerExecutor.shutdown();
-        timeForMove = 0; // Reset time elapsed.
+        timeForMove = 0; // Reset time elapsed for a move.
 
         timerExecutor = Executors.newSingleThreadScheduledExecutor();
-        timerExecutor.scheduleWithFixedDelay(timerRunnable, 0, 1, TimeUnit.SECONDS);
+        timerExecutor.scheduleWithFixedDelay(timerRunnable, 0, 100, TimeUnit.MILLISECONDS);
     }
 
     public Scene getScene() {
-        if (isGameOver()) return this.dashboard.getScene();
+        if (finished) return this.dashboard.getScene();
         else return scene;
     }
 }

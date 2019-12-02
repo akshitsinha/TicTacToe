@@ -16,14 +16,18 @@
 
 package com.wimi.tictactoe.client.game;
 
-import com.wimi.tictactoe.util.Console;
 import javafx.scene.control.Button;
 import org.json.simple.JSONArray;
 
-import java.util.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
 
 /**
- * @Description Contains the basic methods used for running a tic tac toe game.
+ * @Description Contains the basic methods used for running a Tic Tac Toe game and utils.
  */
 public class Structure {
 
@@ -35,19 +39,18 @@ public class Structure {
     protected boolean checkForWin(Button[] nodes) {
         String[] moves = new String[nodes.length];
         for (int i = 0; i < moves.length; i++) moves[i] = nodes[i].getText();
-        long initialTime = System.nanoTime();
 
-        if ((Objects.equals(moves[0], moves[1]) && Objects.equals(moves[1], moves[2]) && !moves[0].equals(" ")) ||
-                (Objects.equals(moves[3], moves[4]) && Objects.equals(moves[4], moves[5]) && !moves[3].equals(" ")) ||
-                (Objects.equals(moves[6], moves[7]) && Objects.equals(moves[7], moves[8]) && !moves[6].equals(" ")) ||
-                (Objects.equals(moves[0], moves[3]) && Objects.equals(moves[3], moves[6]) && !moves[0].equals(" ")) ||
-                (Objects.equals(moves[1], moves[4]) && Objects.equals(moves[4], moves[7]) && !moves[1].equals(" ")) ||
-                (Objects.equals(moves[2], moves[5]) && Objects.equals(moves[5], moves[8]) && !moves[2].equals(" ")) ||
-                (Objects.equals(moves[0], moves[4]) && Objects.equals(moves[4], moves[8]) && !moves[0].equals(" ")) ||
-                (Objects.equals(moves[2], moves[4]) && Objects.equals(moves[4], moves[6]) && !moves[2].equals(" "))) {
-            Console.log("Time taken to determine game result was " + (System.nanoTime() - initialTime) + "ns.");
-            return true;
-        } else return false;
+        for (int i = 0; i < 9; i += 3) { // Check in rows
+            if (equals(moves[i], moves[i + 1], moves[i + 2]) && !moves[i].equals(" ")) return true;
+        }
+
+        for (int i = 0; i < 3; i++) { // Check in columns
+            if (equals(moves[i], moves[i + 3], moves[i + 6]) && !moves[i].equals(" ")) return true;
+        }
+
+        // Check Diagonal and Anti-Diagonal.
+        if (equals(moves[0], moves[4], moves[8]) && !moves[0].equals(" ")) return true;
+        else return equals(moves[2], moves[4], moves[6]) && !moves[2].equals(" ");
     }
 
     /**
@@ -169,13 +172,22 @@ public class Structure {
     }
 
     /**
-     * Checks indefinite object parameters when equal.
+     * Returns true when if object parameters are equal.
      *
      * @param objects Object Arguments to check for equality on.
      */
     private boolean equals(Object... objects) {
         Set<Object> set = new HashSet<>(Arrays.asList(objects));
         return set.size() == 1;
+    }
+
+    /**
+     * Rounds up a number to one decimal place.
+     */
+    public double round(double value) {
+        BigDecimal bigDecimal = BigDecimal.valueOf(value);
+        bigDecimal = bigDecimal.setScale(1, RoundingMode.HALF_UP);
+        return bigDecimal.doubleValue();
     }
 
     /**

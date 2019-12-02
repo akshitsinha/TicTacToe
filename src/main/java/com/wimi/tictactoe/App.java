@@ -153,8 +153,8 @@ public class App extends Application {
         StackPane.setMargin(gameBanner, new Insets(20, 0, 0, 0));
         root.getChildren().addAll(vBox, gameBanner);
 
-        stage.setMinHeight(700);
-        stage.setMinWidth(1000);
+        stage.setMinWidth(1280);
+        stage.setMinHeight(720);
         stage.show();
     }
 
