@@ -21,10 +21,7 @@ import org.json.simple.JSONArray;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @Description Contains the basic methods used for running a Tic Tac Toe game and utils.
@@ -34,11 +31,11 @@ public class Structure {
     /**
      * Checks if there is a win in the game.
      *
-     * @param nodes Game Matrix to check for a win.
+     * @param buttons Game Matrix to check for a win.
      */
-    protected boolean checkForWin(Button[] nodes) {
-        String[] moves = new String[nodes.length];
-        for (int i = 0; i < moves.length; i++) moves[i] = nodes[i].getText();
+    protected boolean checkForWin(Button[] buttons) {
+        String[] moves = new String[buttons.length];
+        for (int i = 0; i < moves.length; i++) moves[i] = buttons[i].getText();
 
         for (int i = 0; i < 9; i += 3) { // Check in rows
             if (equals(moves[i], moves[i + 1], moves[i + 2]) && !moves[i].equals(" ")) return true;
@@ -154,14 +151,23 @@ public class Structure {
     }
 
     /**
+     * Randomly gets a available spot among all the available spots.
+     *
+     * @param buttons To get the game state from.
+     */
+    protected int getAnyAvailSpot(Button[] buttons) {
+        List<Integer> availableIndexes = new ArrayList<>();
+        for (int i = 0; i < 9; i++) if (buttons[i].getText().equals(" ")) availableIndexes.add(i);
+        return availableIndexes.get(new Random().nextInt(availableIndexes.size()));
+    }
+
+    /**
      * Generates a random number between 0 and 1 and decides the next move accordingly.
      *
      * @return State of a move.
      */
     protected States randomMoveGenerator() {
-        Random random = new Random();
-
-        switch (random.nextInt(2)) {
+        switch (new Random().nextInt(2)) {
             case 0:
                 return States.O;
             case 1:
@@ -176,7 +182,7 @@ public class Structure {
      *
      * @param objects Object Arguments to check for equality on.
      */
-    private boolean equals(Object... objects) {
+    protected boolean equals(Object... objects) {
         Set<Object> set = new HashSet<>(Arrays.asList(objects));
         return set.size() == 1;
     }

@@ -66,7 +66,7 @@ public class SettingsConfigurator {
                 FileReader reader = new FileReader(optionsAssets);
                 jsonObject = (JSONObject) jsonParser.parse(reader);
                 reader.close();
-                Console.log("Written default JSON values on file. Options JSON. Thru " + this.getClass().getSimpleName());
+                Console.log("Written default JSON values on file.");
             } catch (IOException | ParseException e) {
                 e.printStackTrace();
             }
@@ -115,6 +115,23 @@ public class SettingsConfigurator {
             jsonObject = (JSONObject) jsonParser.parse(reader);
             if (jsonObject.get("theme").equals(Themes.DARK.toString())) return Themes.DARK;
             else if (jsonObject.get("theme").equals(Themes.LIGHT.toString())) return Themes.LIGHT;
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    /**
+     * @return Current set difficulty level.
+     * Used when playing against the computer.
+     */
+    public Levels getDifficulty() {
+        try (FileReader reader = new FileReader(optionsAssets)) {
+            jsonObject = (JSONObject) jsonParser.parse(reader);
+            if (jsonObject.get("difficulty").equals(Levels.EASY.toString())) return Levels.EASY;
+            else if (jsonObject.get("difficulty").equals(Levels.INTERMEDIATE.toString())) return Levels.INTERMEDIATE;
+            else if (jsonObject.get("difficulty").equals(Levels.IMPOSSIBLE.toString())) return Levels.IMPOSSIBLE;
         } catch (IOException | ParseException e) {
             e.printStackTrace();
         }

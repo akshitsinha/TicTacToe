@@ -143,10 +143,10 @@ public class Dashboard extends Structure {
         seriesO.setName("Times of O");
 
         for (int i = 0; i < timesOfX.size(); i++)
-            seriesX.getData().add(new XYChart.Data<>("Move" + (i + 1), (double) timesOfX.get(i)));
+            seriesX.getData().add(new XYChart.Data<>("Move " + (i + 1), (double) timesOfX.get(i)));
 
         for (int i = 0; i < timesOfO.size(); i++)
-            seriesO.getData().add(new XYChart.Data<>("Move" + (i + 1), (double) timesOfO.get(i)));
+            seriesO.getData().add(new XYChart.Data<>("Move " + (i + 1), (double) timesOfO.get(i)));
 
         Tile chartTile = TileBuilder.create()
                 .skinType(Tile.SkinType.SMOOTHED_CHART)
@@ -223,7 +223,7 @@ public class Dashboard extends Structure {
 
         if (totalTime < 60) return Math.round(totalTime) + "s";
         else if (totalTime <= 3600) return round(totalTime / 60) + "m";
-        else return "Too big!";
+        else return ">= 1hr";
     }
 
     public Scene getScene() {

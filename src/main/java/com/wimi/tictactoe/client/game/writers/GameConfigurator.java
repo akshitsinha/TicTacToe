@@ -74,9 +74,6 @@ public class GameConfigurator {
                 .setStyle("-jfx-button-type: RAISED; -fx-background-color: #895e18; -fx-text-fill: white;")
                 .build();
 
-        gameSelectComp.setDisable(true);
-        // Playing against computer is disabled at the moment but may be available in the future.
-
         Button timedGame = new ButtonBuilder("Timed Mode") // R2 C1
                 .setPrefWidth(200)
                 .setStyle("-jfx-button-type: RAISED; -fx-background-color: #760d84; -fx-text-fill: white;")
@@ -118,6 +115,7 @@ public class GameConfigurator {
         gameSelectHuman.setOnAction(event -> {
             fadeTransition.play();
 
+            // PvP (Player vs Player)
             jsonObject.put("opponent", "human");
             gameSelectHuman.setDisable(true);
             gameSelectComp.setDisable(true);
@@ -128,6 +126,7 @@ public class GameConfigurator {
         gameSelectComp.setOnAction(event -> {
             fadeTransition.play();
 
+            // PvE (Player vs Environment)
             jsonObject.put("opponent", "computer");
             gameSelectHuman.setDisable(true);
             gameSelectComp.setDisable(true);

@@ -21,8 +21,11 @@ import com.wimi.tictactoe.builders.ButtonBuilder;
 import com.wimi.tictactoe.builders.TextBuilder;
 import com.wimi.tictactoe.client.NoughtsAndCrosses;
 import com.wimi.tictactoe.client.game.Structure;
+import com.wimi.tictactoe.client.game.algo.InterMove;
+import com.wimi.tictactoe.client.game.algo.Minimax;
 import com.wimi.tictactoe.gui.Dashboard;
 import com.wimi.tictactoe.util.Console;
+import com.wimi.tictactoe.util.Levels;
 import com.wimi.tictactoe.util.Themes;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -73,6 +76,7 @@ public class GameEngine extends Structure {
     private final Button[] gameNodes = new Button[9];
     private final GridPane gameGrid = new GridPane();
     private Dashboard dashboard;
+    private Levels difficultyLevel;
     private File theFile;
     private ScheduledExecutorService timerExecutor = Executors.newSingleThreadScheduledExecutor(); // Timer which CAN reset anytime.
     private JSONObject jsonObject = new JSONObject(); // Primary JSON object.
@@ -158,7 +162,11 @@ public class GameEngine extends Structure {
                 }
 
                 Console.log("The opponent is " + jsonObject.get("opponent").toString());
-                // which opponent log here for future
+                if (jsonObject.get("opponent").equals("computer")) {
+                    difficultyLevel = NoughtsAndCrosses.getWriter().getDifficulty();
+                    Console.log("User playing at " + difficultyLevel + " difficulty against computer.");
+                    Console.log("Computer is making moves as " + getConjugateMove(getMoveID(jsonObject.get("move").toString())));
+                }
 
                 jsonArrayX = (JSONArray) jsonObject.get("timeX");
                 jsonArrayO = (JSONArray) jsonObject.get("timeO");
@@ -191,7 +199,10 @@ public class GameEngine extends Structure {
                 } else Console.log("This game is being played in Unlimited Time mode.");
 
                 Console.log("The opponent is " + jsonObject.get("opponent").toString());
-                // Opponent log here
+                if (jsonObject.get("opponent").equals("computer")) {
+                    difficultyLevel = NoughtsAndCrosses.getWriter().getDifficulty();
+                    Console.log("User playing at " + difficultyLevel + " difficulty against computer.");
+                }
 
                 elapsedExecutor.scheduleWithFixedDelay(elapsedRunnable, 1, 1, TimeUnit.SECONDS);
                 timerExecutor.scheduleWithFixedDelay(timerRunnable, 0, 100, TimeUnit.MILLISECONDS);
@@ -332,35 +343,20 @@ public class GameEngine extends Structure {
                     .setStyle("-jfx-button-type: RAISED; -fx-background-color: gold; -fx-text-fill: blue;")
                     .setID(String.valueOf(i))
                     .onMouseClick(event -> {
-                        gameNodes[finalI].setText(move.toString());
-                        gameNodes[finalI].setDisable(true);
+                        doMove(finalI);
 
-                        switch (move) {
-                            case X:
-                                Console.log("Time taken for X's move " + (movesX + 1) + " was " + round(timeForMove) + "s");
-                                movesX++;
-                                jsonArrayX.add(round(timeForMove));
-                                move = States.O;
-                                break;
-                            case O:
-                                Console.log("Time taken for O's move " + (movesO + 1) + " was " + round(timeForMove) + "s");
-                                movesO++;
-                                jsonArrayO.add(round(timeForMove));
-                                move = States.X;
-                                break;
-                            default:
-                                throw new IllegalStateException("Check the move passed! Move can only be a nought or a cross.");
+                        if (difficultyLevel != null && !finished) {
+                            if (difficultyLevel.equals(Levels.EASY)) {
+                                int cell = getAnyAvailSpot(gameNodes);
+                                Console.log("Computer made a move at cell " + cell);
+
+                                doMove(cell);
+                            } else if (difficultyLevel.equals(Levels.INTERMEDIATE)) {
+                                doMove(new InterMove(gameNodes, move).getCellID());
+                            } else if (difficultyLevel.equals(Levels.IMPOSSIBLE)) {
+                                doMove(new Minimax(gameNodes, move).getCellID());
+                            } else throw new IllegalStateException("Unknown difficulty level!");
                         }
-
-                        nextMove.setText(move.toString());
-
-                        if (checkForWin(gameNodes)) {
-                            winner = getConjugateMove(move);
-                            win();
-                        } else if (getTotalMoves(gameNodes) >= 9) {
-                            Console.log("The game has resulted in a draw!");
-                            win();
-                        } else resetTimer();
                     })
                     .build();
         }
@@ -372,6 +368,39 @@ public class GameEngine extends Structure {
         gameGrid.setHgap(30);
         gameGrid.setPadding(new Insets(10));
         gameGrid.setAlignment(Pos.CENTER);
+    }
+
+    private void doMove(int id) {
+        gameNodes[id].setText(move.toString());
+        gameNodes[id].setDisable(true);
+
+        switch (move) {
+            case X:
+                Console.log("Time taken for X's move " + (movesX + 1) + " was " + round(timeForMove) + "s");
+                movesX++;
+                jsonArrayX.add(round(timeForMove));
+                move = States.O;
+                break;
+            case O:
+                Console.log("Time taken for O's move " + (movesO + 1) + " was " + round(timeForMove) + "s");
+                movesO++;
+                jsonArrayO.add(round(timeForMove));
+                move = States.X;
+                break;
+            default:
+                throw new IllegalStateException("Check the move passed! Move can only be a nought or a cross.");
+        }
+
+        if (checkForWin(gameNodes)) {
+            winner = getConjugateMove(move);
+            win();
+        } else if (getTotalMoves(gameNodes) >= 9) {
+            Console.log("The game has resulted in a draw!");
+            win();
+        } else {
+            nextMove.setText(move.toString());
+            resetTimer();
+        }
     }
 
     /**
@@ -408,7 +437,7 @@ public class GameEngine extends Structure {
     }
 
     public Scene getScene() {
-        if (finished) return this.dashboard.getScene();
+        if (finished) return dashboard.getScene();
         else return scene;
     }
 }
